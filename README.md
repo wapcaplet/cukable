@@ -1,7 +1,7 @@
-Cukeness
-========
+Cukable
+=======
 
-Cukeness allows you to write and execute [Cucumber](http://cukes.info) tests
+Cukable allows you to write and execute [Cucumber](http://cukes.info) tests
 from [FitNesse](http://fitnesse.org).
 
 It consists of a [rubyslim](http://github.com/unclebob/rubyslim) fixture that
@@ -31,7 +31,7 @@ If this is your `.feature` file:
 
 Then here is what your FitNesse wikitext would be:
 
-    | Table: Cukeness                     |
+    | Table: Cukable                      |
     | Feature: Hello                      |
     |   Scenario: Hello world             |
     |     Given I am on the hello page    |
@@ -60,7 +60,7 @@ Cucumber supports multiline step arguments in the form of tables; in a
 
 In a FitNesse wiki page, this would translate to:
 
-    | Table: Cukeness                                |
+    | Table: Cukable                                 |
     | Feature: Tables                                |
     |   Scenario: Fill in fields                     |
     |     Given I am on the contact page             |

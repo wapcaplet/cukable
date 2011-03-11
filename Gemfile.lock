@@ -1,0 +1,42 @@
+PATH
+  remote: .
+  specs:
+    Cukable (0.1.1)
+      cucumber
+      json
+
+GEM
+  remote: http://rubygems.org/
+  specs:
+    builder (2.1.2)
+    cucumber (0.8.5)
+      builder (~> 2.1.2)
+      diff-lcs (~> 1.1.2)
+      gherkin (~> 2.1.4)
+      json_pure (~> 1.4.3)
+      term-ansicolor (~> 1.0.4)
+    diff-lcs (1.1.2)
+    gherkin (2.1.5)
+      trollop (~> 1.16.2)
+    json (1.5.1)
+    json_pure (1.4.6)
+    rcov (0.9.9)
+    rspec (2.5.0)
+      rspec-core (~> 2.5.0)
+      rspec-expectations (~> 2.5.0)
+      rspec-mocks (~> 2.5.0)
+    rspec-core (2.5.1)
+    rspec-expectations (2.5.0)
+      diff-lcs (~> 1.1.2)
+    rspec-mocks (2.5.0)
+    term-ansicolor (1.0.5)
+    trollop (1.16.2)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  Cukable!
+  bundler (~> 1.0)
+  rcov
+  rspec (>= 2.2.0)
