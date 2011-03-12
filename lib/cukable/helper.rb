@@ -20,13 +20,16 @@ module Cukable
     end
 
 
-    # Wikify (CamelCase) the given string, removing spaces, underscores,
-    # dashes and periods, and CamelCasing the remaining words.
+    # Wikify (CamelCase) the given string, removing spaces, underscores, dashes
+    # and periods, and CamelCasing the remaining words. If this does not result
+    # in a CamelCase word with at least two words in it (that is, if the input was
+    # only a single word), 'Wiki' is appended to ensure a valid WikiWord.
     #
     # @example
     #   wikify("file.extension")   #=> "FileExtension"
     #   wikify("with_underscore")  #=> "WithUnderscore"
     #   wikify("having spaces")    #=> "HavingSpaces"
+    #   wikify("foo")              #=> "FooWiki"
     #
     # @param [String] string
     #   String to wikify
@@ -37,7 +40,11 @@ module Cukable
     def wikify(string)
       string.gsub!(/^[a-z]|[_.\s\-]+[a-z]/) { |a| a.upcase }
       string.gsub!(/[_.\s\-]/, '')
-      return string
+      if string =~ /(([A-Z][a-z]*){2})/
+        return string
+      else
+        return "#{string}Wiki"
+      end
     end
 
 
@@ -59,13 +66,13 @@ module Cukable
 
 
     # Wikify the given path name, and return a path that's suitable
-    # for use as a FitNesse wiki page path. Directories will have 'Dir'
-    # appended (to ensure a valid CamelCase name), and the filename will
-    # have its extension CamelCased.
+    # for use as a FitNesse wiki page path. Any path component having only
+    # a single word in it will have the word 'Wiki' appended, to ensure
+    # that it is a valid WikiWord.
     #
     # @example
     #   wikify_path('features/account/create.feature')
-    #     #=> 'FeaturesDir/AccountDir/CreateFeature'
+    #     #=> 'FeaturesWiki/AccountWiki/CreateFeature'
     #
     # @param [String] path
     #   Arbitrary path name to convert
@@ -74,12 +81,10 @@ module Cukable
     #   New path with each component being a WikiWord
     #
     def wikify_path(path)
-      # TODO: Handle the case where the last path component is a directory,
-      # or is a filename without an extension
-      parts = path.split(File::SEPARATOR)
-      wiki_parts = parts[0..-2].map {|dir| wikify(dir) + 'Dir'} + [wikify(parts[-1])]
-      wiki_path = File.join(wiki_parts)
-      return wiki_path
+      wiki_parts = path.split(File::SEPARATOR).collect do |part|
+        wikify(part)
+      end
+      return File.join(wiki_parts)
     end
 
 
