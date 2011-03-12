@@ -1,5 +1,5 @@
 Gem::Specification.new do |s|
-  s.name = "Cukable"
+  s.name = "cukable"
   s.version = "0.1.1"
   s.summary = "Runs Cucumber tests from FitNesse"
   s.description = <<-EOS
@@ -15,6 +15,8 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency 'rspec', '>= 2.2.0'
   s.add_development_dependency 'rcov'
+  s.add_development_dependency 'yard'
+  s.add_development_dependency 'bluecloth'
 
   s.files = `git ls-files`.split("\n")
   s.require_path = 'lib'

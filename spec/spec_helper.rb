@@ -1,6 +1,7 @@
+require 'rspec'
 require 'cukable/converter'
+require 'cukable/cuke'
 
 RSpec.configure do |config|
-  config.include Cukable::Converter
 end
 

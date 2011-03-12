@@ -11,14 +11,12 @@
 #   .feature file with |...| wrapping each line. Empty lines should be skipped.
 #
 
-# The "main" function, only executed when this script is
-# run standalone (not when it's imported from elsewhere)
-if __FILE__ == $PROGRAM_NAME
-  if ARGV.count == 0
-    puts "Usage: cuke2fit.rb <features_path> <fitnesse_path>"
-  else
-    convert_features_to_fitnesse(ARGV[0], ARGV[1])
-  end
-end
+require 'cukable/converter'
 
+if ARGV.count == 0
+  puts "Usage: cuke2fit.rb <features_path> <fitnesse_path>"
+else
+  converter = Cukable::Converter.new
+  converter.features_to_fitnesse(ARGV[0], ARGV[1])
+end
 

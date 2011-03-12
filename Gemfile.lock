@@ -1,13 +1,14 @@
 PATH
   remote: .
   specs:
-    Cukable (0.1.1)
+    cukable (0.1.1)
       cucumber
       json
 
 GEM
   remote: http://rubygems.org/
   specs:
+    bluecloth (2.0.11)
     builder (2.1.2)
     cucumber (0.8.5)
       builder (~> 2.1.2)
@@ -31,12 +32,15 @@ GEM
     rspec-mocks (2.5.0)
     term-ansicolor (1.0.5)
     trollop (1.16.2)
+    yard (0.6.4)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
-  Cukable!
+  bluecloth
   bundler (~> 1.0)
+  cukable!
   rcov
   rspec (>= 2.2.0)
+  yard

@@ -1,22 +1,58 @@
 require 'fileutils'
 
 module Cukable
-  module Converter
-    # Recursively find all .feature files in the given directory
-    def feature_hierarchy(dir)
-      pattern = File.join(dir, '**', '*.feature')
-      return Dir.glob(pattern)
+  class Converter
+
+    # Convert all .feature files in `features_path` to FitNesse wiki pages
+    # under `fitnesse_path`.
+    #
+    # @example
+    #   features_to_fitnesse('features/account', 'FitNesseRoot/AccountTests')
+    #
+    # @param [String] features_path
+    #   Directory where `.feature` files reside
+    # @param [String] fitnesse_path
+    #   Directory within the FitNesse wiki hierarchy where converted features
+    #   will be written as wiki pages. This must be the path of an existing page.
+    #
+    def features_to_fitnesse(features_path, fitnesse_path)
+      # Ensure FitNesse directory already exists
+      if !File.directory?(fitnesse_path)
+        raise ArgumentError, "FitNesse path must be an existing directory."
+      end
+
+      # Get all .feature files
+      features = Dir.glob(File.join(features_path, '**', '*feature'))
+
+      # For each .feature file
+      features.each do |feature_path|
+        # Determine the appropriate wiki path name
+        wiki_path = File.join(fitnesse_path, wikify_path(filename))
+        # Fill that wiki path with content stubs
+        create_content_stubs(wiki_path)
+        # Convert the .feature to wikitext
+        content = wikify_feature(File.open(feature_path))
+        # Write the wikitext to a wiki page
+        create_wiki_page(wiki_path, content, 'test')
+        # Show user some status output
+        puts "OK: #{feature_path} => #{wiki_path}"
+      end
     end
 
 
     # Wikify (CamelCase) the given string, removing spaces, underscores,
     # dashes and periods, and CamelCasing the remaining words.
     #
-    # Examples:
+    # @example
+    #   wikify("file.extension")   #=> "FileExtension"
+    #   wikify("with_underscore")  #=> "WithUnderscore"
+    #   wikify("having spaces")    #=> "HavingSpaces"
     #
-    #   wikify("file.extension") => "FileExtension"
-    #   wikify("with_underscore") => "WithUnderscore"
-    #   wikify("having spaces") => "HavingSpaces"
+    # @param [String] string
+    #   String to wikify
+    #
+    # @return [String]
+    #   Wikified string
     #
     def wikify(string)
       string.gsub!(/^[a-z]|[_.\s\-]+[a-z]/) { |a| a.upcase }
@@ -25,13 +61,37 @@ module Cukable
     end
 
 
+    # Return the given string with any CamelCase words escaped with
+    # FitNesse's `!-...-!` string-literal markup.
+    #
+    # @example
+    #   sanitize("With a CamelCase word") #=> "With a !-CamelCase-! word"
+    #
+    # @param [String] string
+    #   String to sanitize
+    #
+    # @return [String]
+    #   Same string with CamelCase words escaped
+    #
+    def sanitize(string)
+      return string.gsub(/(([A-Z][a-z]*){2,99})/, '!-\1-!')
+    end
+
+
     # Wikify the given path name, and return a path that's suitable
     # for use as a FitNesse wiki page path. Directories will have 'Dir'
     # appended (to ensure a valid CamelCase name), and the filename will
     # have its extension CamelCased.
     #
-    #   wikify_path('features/marketing_campaign/create.feature')
-    #   => 'FeaturesDir/MarketingCampaignDir/CreateFeature'
+    # @example
+    #   wikify_path('features/account/create.feature')
+    #     #=> 'FeaturesDir/AccountDir/CreateFeature'
+    #
+    # @param [String] path
+    #   Arbitrary path name to convert
+    #
+    # @return [String]
+    #   New path with each component being a WikiWord
     #
     def wikify_path(path)
       parts = path.split(File::SEPARATOR)
@@ -41,34 +101,16 @@ module Cukable
     end
 
 
-    # Return a FitNesse wiki-page hierarchy corresponding to the given
-    # list of .feature filenames. For example:
-    #
-    #   'features/dealer/new.feature',
-    #   'features/dealer/test_restaurant.feature',
-    #   'features/marketing_campaign/create.feature',
-    #   'features/marketing_campaign/create_template.feature'
-    #
-    #   =>
-    #
-    #   'FitNesseRoot/FeaturesDir/DealerDir/NewFeature'
-    #   'FitNesseRoot/FeaturesDir/DealerDir/TestRestaurantFeature'
-    #   'FitNesseRoot/FeaturesDir/MarketingCampaignDir/CreateFeature'
-    #   'FitNesseRoot/FeaturesDir/MarketingCampaignDir/CreateTemplateFeature'
-    #
-    def features_to_wiki(feature_files, wiki_dir='')
-      feature_files.collect do |filename|
-        if !wiki_dir.empty?
-          File.join(wiki_dir, wikify_path(filename))
-        else
-          File.join(wikify_path(filename))
-        end
-      end
-    end
-
-
     # Create a new wiki page at the given path, with the given content.
-    # `type` may be 'normal', 'test', or 'suite'.
+    #
+    # @param [String] path
+    #   Directory name where page should reside. Will be created if it
+    #   does not already exist.
+    # @param [String] content
+    #   Raw string content of the new page. May contain newlines.
+    # @param [String] type
+    #   Type of page to write. May be 'normal', 'test', or 'suite'.
+    #
     def create_wiki_page(path, content, type='normal')
       FileUtils.mkdir_p(path)
       # Write the content
@@ -97,16 +139,44 @@ module Cukable
     end
 
 
-    # Return the given string with any CamelCase words escaped with
-    # FitNesse's `!- ... -!` string-literal markup.
-    def sanitize(string)
-      return string.gsub(/(([A-Z][a-z]*){2,99})/, '!-\1-!')
+    # Create a stub `content.txt` file in the given directory, and all
+    # ancestor directories, if a `content.txt` does not already exist.
+    #
+    # @example
+    #   create_content_stubs('FitNesseRoot/PageOne/PageTwo/PageThree')
+    #     # Creates these files, and their containing directories:
+    #     #   FitNesseRoot/PageOne/content.txt
+    #     #   FitNesseRoot/PageOne/PageTwo/content.txt
+    #     #   FitNesseRoot/PageOne/PageTwo/PageThree/content.txt
+    #
+    # @param [String] fitnesse_path
+    #   Directory name of deepest level in the wiki hierarchy where
+    #   you want content stubs to be created
+    #
+    def create_content_stubs(fitnesse_path)
+      path = fitnesse_path
+      # While there are ancestor directories
+      while path != '.'
+        # If there is no content.txt file, create one
+        if !File.exists?(File.join(path, 'content.txt'))
+          create_wiki_page(path, '!contents')
+        end
+        # Get the parent path
+        path = File.dirname(path)
+      end
     end
 
 
-    # Read the given `.feature` file, and return its content converted to
-    # FitNesse wiki-page format.
-    def wikify_content(feature_filename)
+    # Wikify the given feature, and return FitNesse wikitext.
+    #
+    # @param [Array, File] feature
+    #   An iterable that yields each line in a Cucumber feature. May be
+    #   an open File object, or an Array of lines.
+    #
+    # @return [String]
+    #   FitNesse wikitext, containing a table with all scenarios in the feature
+    #
+    def wikify_feature(feature)
 
       # Unparsed text (between 'Feature:' line and the first Background/Scenario)
       unparsed = []
@@ -117,7 +187,7 @@ module Cukable
       # Are we in the unparsed-text section of the .feature file?
       in_unparsed = false
 
-      File.open(feature_filename).each do |line|
+      feature.each do |line|
         line = sanitize(line.strip)
 
         # The Feature: line starts the table, and also starts the unparsed
@@ -134,8 +204,7 @@ module Cukable
 
         # Between 'Feature:...' and the first Background/Scenario/Scenario Outline
         # block, we're in the unparsed text section
-        elsif in_unparsed and line != ''
-          puts "  Unparsed: #{line}"
+        elsif in_unparsed and !line.empty?
           unparsed << line
 
         # If line contains a table row, insert a '|' at the beginning
@@ -147,7 +216,7 @@ module Cukable
           nil
 
         # Otherwise, if line is non-empty, insert a '|' at beginning and end
-        elsif line != ''
+        elsif !line.empty?
           table << "| #{line} |"
 
         end
@@ -156,41 +225,6 @@ module Cukable
       return unparsed.join("\n") + "\n\n" + table.join("\n") + "\n"
     end
 
-
-    # Create a stub `content.txt` file in the given directory, and all
-    # ancestor directories, if a `content.txt` does not already exist.
-    def stub_content(fitnesse_path)
-      path = fitnesse_path
-      # While there are ancestor directories
-      while path != '.'
-        # If there is no content.txt file, create one
-        if !File.exists?(File.join(path, 'content.txt'))
-          create_wiki_page(path, '!contents')
-        end
-        # Get the parent path
-        path = File.dirname(path)
-      end
-    end
-
-
-    # Convert all .feature files in `features_path` to FitNesse wiki pages
-    # under `fitnesse_path`.
-    def convert_features_to_fitnesse(features_path, fitnesse_path)
-      if !File.directory?(fitnesse_path)
-        raise ArgumentError, "FitNesse path must be an existing directory."
-      end
-      # Get all .feature files
-      features = feature_hierarchy(features_path)
-      wiki_paths = features_to_wiki(features, fitnesse_path)
-
-      features.zip(wiki_paths).each do |feature_path, wiki_path|
-        puts "#{feature_path} => #{wiki_path}"
-        # Create stub content pages all along this path
-        stub_content(wiki_path)
-        content = wikify_content(feature_path)
-        create_wiki_page(wiki_path, content, 'test')
-      end
-    end
 
   end
 end

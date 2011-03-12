@@ -77,14 +77,6 @@ module Cukable
     end
 
 
-    # Return `filename` with `prefix` and `suffix` removed, and any
-    # path-separators converted to underscores.
-    def clean_filename(filename, prefix, suffix)
-      middle = filename.gsub(/^#{prefix}\/(.+)\/#{suffix}$/, '\1')
-      return middle.gsub('/', '_')
-    end
-
-
     # Write `.feature` files for all scenarios found in `suite`,
     # and return an array of all `.feature` filenames.
     def write_suite_features(suite)
@@ -263,6 +255,14 @@ module Cukable
       end
 
       return tables
+    end
+
+
+    # Return `filename` with `prefix` and `suffix` removed, and any
+    # path-separators converted to underscores.
+    def clean_filename(filename, prefix, suffix)
+      middle = filename.gsub(/^#{prefix}\/(.+)\/#{suffix}$/, '\1')
+      return middle.gsub('/', '_')
     end
 
 
