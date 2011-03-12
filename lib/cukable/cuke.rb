@@ -9,16 +9,18 @@
 #   | When        | I do some action       |
 #   | Then        | the result is correct  |
 
-#require 'rubygems'
 require 'json'
 require 'fileutils'
-require 'digest/md5'
+
+require 'cukable/helper'
 
 class FormatError < Exception
 end
 
 module Cukable
   class Cuke
+
+    include Cukable::Helper
 
     # Hash mapping the MD5 digest of a feature to the .json output for that
     # feature. Something of a hack, using a class variable for this, but it
@@ -82,7 +84,8 @@ module Cukable
     def write_suite_features(suite)
       # For all FitNesse content files in the suite
       feature_filenames = []
-      fitnesse_content_files(suite).each do |fitnesse_filename|
+
+      Dir.glob(File.join(suite, '**', 'content.txt')).each do |fitnesse_filename|
         feature = clean_filename(fitnesse_filename, suite, 'content.txt')
         number = 0
         # For all feature tables in the content file
@@ -110,7 +113,7 @@ module Cukable
       # simply return the results that were already generated.
       existing = @@output_files[table_digest(table)]
       if existing
-        return get_results(existing)
+        results = existing
       # Otherwise, run Cucumber from scratch on this table,
       # and return the results
       else
@@ -118,12 +121,12 @@ module Cukable
         # Create @features_dir if it doesn't exist
         FileUtils.mkdir(@features_dir) unless File.directory?(@features_dir)
         feature_filename = File.join(@features_dir, 'fitnesse_test.feature')
-        out_file = File.join(@output_dir, "#{feature_filename}.json")
         # Create the feature file, run cucumber, return results
         write_feature(table, feature_filename)
         run_cucumber([feature_filename], @output_dir)
-        return get_results(out_file)
+        results = File.join(@output_dir, "#{feature_filename}.json")
       end
+      return JSON.load(File.open(results))
     end
 
 
@@ -182,32 +185,6 @@ module Cukable
     end
 
 
-    # Read results from given JSON filename and return a 2D array
-    def get_results(json_filename)
-      results = JSON.load(File.open(json_filename))
-      return results
-    end
-
-
-    # Return a list of all FitNesse content files within the given directory
-    # (recursing into subdirectories).
-    def fitnesse_content_files(dir)
-      pattern = File.join(dir, '**', 'content.txt')
-      return Dir.glob(pattern)
-    end
-
-
-    # Return an MD5 digest string for `table`, where `table` is in the same
-    # format accepted by `do_table`.
-    def table_digest(table)
-      digest = Digest::MD5.new
-      table.flatten.each do |cell|
-        digest.update(cell.gsub('&lt;', '<').gsub('&gt;', '>'))
-      end
-      return digest.to_s
-    end
-
-
     # Return an array of Cucumber tables found in the given FitNesse content
     # file, or an empty array if no tables are found. Each table in the array
     # is in the same format as a table passed to the `do_table` method; that is,
@@ -257,20 +234,6 @@ module Cukable
       return tables
     end
 
-
-    # Return `filename` with `prefix` and `suffix` removed, and any
-    # path-separators converted to underscores.
-    def clean_filename(filename, prefix, suffix)
-      middle = filename.gsub(/^#{prefix}\/(.+)\/#{suffix}$/, '\1')
-      return middle.gsub('/', '_')
-    end
-
-
-    # Remove FitNesse-generated link cruft from a string. Strips <a ...></a> tags,
-    # keeping the inner content unless that content is '[?]'.
-    def remove_cruft(string)
-      string.gsub(/<a [^>]*>([^<]*)<\/a>/, '\1').gsub('[?]', '')
-    end
 
   end
 end

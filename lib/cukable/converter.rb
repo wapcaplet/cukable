@@ -1,7 +1,12 @@
+
 require 'fileutils'
+
+require 'cukable/helper'
 
 module Cukable
   class Converter
+
+    include Cukable::Helper
 
     # Convert all .feature files in `features_path` to FitNesse wiki pages
     # under `fitnesse_path`.
@@ -37,67 +42,6 @@ module Cukable
         # Show user some status output
         puts "OK: #{feature_path} => #{wiki_path}"
       end
-    end
-
-
-    # Wikify (CamelCase) the given string, removing spaces, underscores,
-    # dashes and periods, and CamelCasing the remaining words.
-    #
-    # @example
-    #   wikify("file.extension")   #=> "FileExtension"
-    #   wikify("with_underscore")  #=> "WithUnderscore"
-    #   wikify("having spaces")    #=> "HavingSpaces"
-    #
-    # @param [String] string
-    #   String to wikify
-    #
-    # @return [String]
-    #   Wikified string
-    #
-    def wikify(string)
-      string.gsub!(/^[a-z]|[_.\s\-]+[a-z]/) { |a| a.upcase }
-      string.gsub!(/[_.\s\-]/, '')
-      return string
-    end
-
-
-    # Return the given string with any CamelCase words escaped with
-    # FitNesse's `!-...-!` string-literal markup.
-    #
-    # @example
-    #   sanitize("With a CamelCase word") #=> "With a !-CamelCase-! word"
-    #
-    # @param [String] string
-    #   String to sanitize
-    #
-    # @return [String]
-    #   Same string with CamelCase words escaped
-    #
-    def sanitize(string)
-      return string.gsub(/(([A-Z][a-z]*){2,99})/, '!-\1-!')
-    end
-
-
-    # Wikify the given path name, and return a path that's suitable
-    # for use as a FitNesse wiki page path. Directories will have 'Dir'
-    # appended (to ensure a valid CamelCase name), and the filename will
-    # have its extension CamelCased.
-    #
-    # @example
-    #   wikify_path('features/account/create.feature')
-    #     #=> 'FeaturesDir/AccountDir/CreateFeature'
-    #
-    # @param [String] path
-    #   Arbitrary path name to convert
-    #
-    # @return [String]
-    #   New path with each component being a WikiWord
-    #
-    def wikify_path(path)
-      parts = path.split(File::SEPARATOR)
-      wiki_parts = parts[0..-2].map {|dir| wikify(dir) + 'Dir'} + [wikify(parts[-1])]
-      wiki_path = File.join(wiki_parts)
-      return wiki_path
     end
 
 
@@ -188,7 +132,7 @@ module Cukable
       in_unparsed = false
 
       feature.each do |line|
-        line = sanitize(line.strip)
+        line = escape_camel_case(line.strip)
 
         # The Feature: line starts the table, and also starts the unparsed
         # section of the feature file

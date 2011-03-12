@@ -5,35 +5,6 @@ describe Cukable::Converter do
     @converter = Cukable::Converter.new
   end
 
-  context "#wikify" do
-    it "strips underscores" do
-      @converter.wikify("name_with_underscore").should == "NameWithUnderscore"
-    end
-
-    it "strips spaces" do
-      @converter.wikify("name with spaces").should == "NameWithSpaces"
-    end
-
-    it "strips periods" do
-      @converter.wikify("name.with.periods").should == "NameWithPeriods"
-    end
-  end
-
-
-  context "#wikify_path" do
-    it "appends Dir to directories" do
-      @converter.wikify_path("features/basic/some.feature").should == "FeaturesDir/BasicDir/SomeFeature"
-    end
-  end
-
-
-  context "#sanitize" do
-    it "escapes CamelCase words with string-literal markup" do
-      @converter.sanitize("Has a CamelCase word").should == "Has a !-CamelCase-! word"
-    end
-  end
-
-
   context "#wikify_feature" do
     it "adds table markup" do
       feature = [
