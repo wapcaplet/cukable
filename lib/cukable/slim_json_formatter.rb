@@ -95,6 +95,7 @@ module Cucumber
       # Add each | table | row | to the multiline arg (these will be output
       # later, in after_step_result, since they should follow the step's output)
       def after_table_row(table_row)
+        return if @hide_this_step
         if table_row.exception
           # FIXME: This prints a stack trace coloring the whole row red.
           # Find a way to color only the failing *cell* red.
@@ -142,6 +143,7 @@ module Cucumber
       # (including the """ opening and closing lines), colored based on
       # the status of the current step.
       def py_string(string)
+        return if @hide_this_step
         status = status_map[@current_step.status]
         @multiline << [status + ':"""']
         string.split("\n").each do |line|
@@ -261,7 +263,11 @@ module Cucumber
 
       # Return a string for outputting the source filename and line number
       def source_message(file_colon_line)
-        ' <span class="source_file">' + file_colon_line + '</span>'
+        # Add some inline style, so this won't look terrible with the
+        # default FitNesse CSS
+        style = "float: right; padding-left: 1em; color: #aaa;"
+        span = " <span style=\"#{style}\" class=\"source_file\">"
+        return span + file_colon_line + '</span>'
       end
 
 

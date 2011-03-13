@@ -92,3 +92,12 @@ would in a .feature file, with triple-double-quotes delimiting the string:
     |   """                          |
 
 
+TODO
+====
+
+- Need more spec tests (full statement coverage before release would be nice)
+- Find a good way to pass arguments to Cucumber (to enable/disable @selenium,
+  run with a certain profile, output a coverage report etc.)
+- Mark individual table cell failures, instead of failing the whole row
+
+

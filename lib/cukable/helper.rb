@@ -53,11 +53,11 @@ module Cukable
     end
 
 
-    # Return the given string with any CamelCase words escaped with
-    # FitNesse's `!-...-!` string-literal markup.
+    # Return the given string with any CamelCase words and email addresses
+    # escaped with FitNesse's `!-...-!` string-literal markup.
     #
     # @example
-    #   escape_camel_case("With a CamelCase word") #=> "With a !-CamelCase-! word"
+    #   literalize("With a CamelCase word") #=> "With a !-CamelCase-! word"
     #
     # @param [String] string
     #   String to escape CamelCase words in
@@ -65,8 +65,16 @@ module Cukable
     # @return [String]
     #   Same string with CamelCase words escaped
     #
-    def escape_camel_case(string)
-      return string.gsub(/(([A-Z][a-z]*){2,99})/, '!-\1-!')
+    def literalize(string)
+      result = string.strip
+      # Literalize email addresses (this is a very simplified email regexp, and
+      # will miss some obscure cases; see:
+      # http://stackoverflow.com/questions/703060/valid-email-address-regular-expression
+      result.gsub!(/([\w\-]+@([\w\-]+\.)+[\w\-]+)/, '!-\1-!')
+      # Literalize CamelCase words
+      result.gsub!(/(([A-Z][a-z]+){2,99})/, '!-\1-!')
+      # FIXME: CamelCase words inside of email addresses will cause havoc!
+      return result
     end
 
 
@@ -104,9 +112,15 @@ module Cukable
     def table_digest(table)
       digest = Digest::MD5.new
       table.flatten.each do |cell|
-        digest.update(CGI.unescapeHTML(cell))
+        digest.update(unescape(cell))
       end
       return digest.to_s
+    end
+
+
+    # Unescape any HTML entities in the given string
+    def unescape(string)
+      return CGI.unescapeHTML(string)
     end
 
   end

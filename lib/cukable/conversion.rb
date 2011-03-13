@@ -26,7 +26,7 @@ module Cukable
       in_unparsed = false
 
       feature.each do |line|
-        line = escape_camel_case(line.strip)
+        line = literalize(line)
 
         # The Feature: line starts the table, and also starts the unparsed
         # section of the feature file
@@ -39,6 +39,12 @@ module Cukable
         elsif line =~ /^(Background:|Scenario:|Scenario Outline:)/
           in_unparsed = false
           table << "| #{line} |"
+
+        # If line contains one or more tags, output them on separate lines
+        elsif line =~ /^\s*@\w+/
+          for tag in line.split
+            table << "| #{tag} |"
+          end
 
         # Between 'Feature:...' and the first Background/Scenario/Scenario Outline
         # block, we're in the unparsed text section
@@ -101,7 +107,7 @@ module Cukable
           # Append a new row to the current table, with pipes
           # and leading/trailing whitespace removed
           if line =~ /\| *(.*) *\| *$/
-            row = $1.split('|').collect { |cell| cell.strip }
+            row = $1.split('|').collect { |cell| unescape(cell.strip) }
             current_table << row
           # No more rows; end this table and append to the results
           else
@@ -226,12 +232,15 @@ module Cukable
     #   you want content stubs to be created
     #
     def create_content_stubs(fitnesse_path)
+      # Content string to put in each stub file
+      content = '!contents -R9 -p -f -h'
+      # Starting with `fitnesse_path`
       path = fitnesse_path
-      # While there are ancestor directories
+      # Until there are no more ancestor directories
       while path != '.'
         # If there is no content.txt file, create one
         if !File.exists?(File.join(path, 'content.txt'))
-          create_wiki_page(path, '!contents')
+          create_wiki_page(path, content)
         end
         # Get the parent path
         path = File.dirname(path)

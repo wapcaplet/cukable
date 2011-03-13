@@ -183,6 +183,37 @@ describe Cukable::Conversion do
       fitnesse_to_features(fitnesse).should == features
     end
 
+
+    it "correctly escapes brackets in Scenario Outlines" do
+      fitnesse = [
+        '| Table: Cuke |',
+        '| Feature: Scenario Outlines |',
+        '| Scenario Outline: With tables |',
+        '| Given a user: |',
+        '| | First | Last |',
+        '| | <first> | <last> |',
+        '| Examples: |',
+        '| | first | last |',
+        '| | Eric  | Pierce |',
+        '| | Ken   | Brazier |',
+      ]
+      features = [
+        [
+          ['Feature: Scenario Outlines'],
+          ['Scenario Outline: With tables'],
+          ['Given a user:'],
+          ['', 'First', 'Last'],
+          ['', '<first>','<last>'],
+          ['Examples:'],
+          ['', 'first', 'last'],
+          ['', 'Eric', 'Pierce'],
+          ['', 'Ken', 'Brazier'],
+        ],
+      ]
+      fitnesse_to_features(fitnesse).should == features
+    end
+
+
     it "ignores non-table lines" do
       fitnesse = [
         'This text should be ignored',

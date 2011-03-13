@@ -158,11 +158,11 @@ module Cukable
         # If this row starts with an empty cell, output remaining cells
         # as a |-delimited table
         if row.first.strip == ""
-          file.puts "  | " + row[1..-1].join(" | ") + " |"
+          file.puts "  | " + unescape(row[1..-1].join(" | ")) + " |"
         # For all other rows, output all cells joined by spaces
         else
           # Replace &lt; and &gt; so scenario outlines will work
-          line = row.join(" ").gsub('&lt;', '<').gsub('&gt;', '>')
+          line = unescape(row.join(" "))
           file.puts line
         end
       end

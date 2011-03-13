@@ -2,9 +2,13 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe Cukable::Helper do
 
-  context "#escape_camel_case" do
-    it "escapes CamelCase words with string-literal markup" do
-      escape_camel_case("Has a CamelCase word").should == "Has a !-CamelCase-! word"
+  context "#literalize" do
+    it "escapes CamelCase words" do
+      literalize("Has a CamelCase word").should == "Has a !-CamelCase-! word"
+    end
+
+    it "escapes email addresses" do
+      literalize("epierce@foo-bar.com").should == "!-epierce@foo-bar.com-!"
     end
   end
 
