@@ -1,9 +1,6 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
-describe Cukable::Converter do
-  before(:each) do
-    @converter = Cukable::Converter.new
-  end
+describe Cukable::Conversion do
 
   context "#feature_to_fitnesse" do
     it "adds table markup" do
@@ -14,7 +11,7 @@ describe Cukable::Converter do
         '    And I fill in "Username" with "Eric"',
         '    And I fill in "Password" with "foobar"',
       ]
-      wiki = [
+      fitnesse = [
         '| Table: Cuke |',
         '| Feature: User account |',
         '| Scenario: Login |',
@@ -22,7 +19,7 @@ describe Cukable::Converter do
         '| And I fill in "Username" with "Eric" |',
         '| And I fill in "Password" with "foobar" |',
       ]
-      @converter.feature_to_fitnesse(feature).should == wiki
+      feature_to_fitnesse(feature).should == fitnesse
     end
 
     it "includes unparsed text" do
@@ -35,7 +32,7 @@ describe Cukable::Converter do
         '  Scenario: Login',
         '    When I am on the login page',
       ]
-      wiki = [
+      fitnesse = [
         'As a user with an account',
         'I want to login to the website',
         '',
@@ -44,7 +41,7 @@ describe Cukable::Converter do
         '| Scenario: Login |',
         '| When I am on the login page |',
       ]
-      @converter.feature_to_fitnesse(feature).should == wiki
+      feature_to_fitnesse(feature).should == fitnesse
     end
 
     it "correctly marks up table rows" do
@@ -60,7 +57,7 @@ describe Cukable::Converter do
         '  Scenario: Login',
         '    When I am on the login page',
       ]
-      wiki = [
+      fitnesse = [
         '| Table: Cuke |',
         '| Feature: User account |',
         '| Background: |',
@@ -71,7 +68,7 @@ describe Cukable::Converter do
         '| Scenario: Login |',
         '| When I am on the login page |',
       ]
-      @converter.feature_to_fitnesse(feature).should == wiki
+      feature_to_fitnesse(feature).should == fitnesse
     end
 
     it "correctly marks up scenario outlines with examples" do
@@ -87,7 +84,7 @@ describe Cukable::Converter do
         '      | home   | Relax       |',
         '      | office | Get to work |',
       ]
-      wiki = [
+      fitnesse = [
         '| Table: Cuke |',
         '| Feature: Scenario outlines |',
         '| Scenario: Different pages |',
@@ -98,7 +95,7 @@ describe Cukable::Converter do
         '| | home   | Relax       |',
         '| | office | Get to work |',
       ]
-      @converter.feature_to_fitnesse(feature).should == wiki
+      feature_to_fitnesse(feature).should == fitnesse
     end
 
     it "correctly includes multi-line strings" do
@@ -112,7 +109,7 @@ describe Cukable::Converter do
         '      Goodbye world',
         '      """',
       ]
-      wiki = [
+      fitnesse = [
         '| Table: Cuke |',
         '| Feature: Strings |',
         '| Scenario: Multi-line string |',
@@ -122,7 +119,100 @@ describe Cukable::Converter do
         '| Goodbye world |',
         '| """ |',
       ]
-      @converter.feature_to_fitnesse(feature).should == wiki
+      feature_to_fitnesse(feature).should == fitnesse
+    end
+  end
+
+
+  context "#fitnesse_to_features" do
+    it "returns one table for each feature" do
+      fitnesse = [
+        '| Table: Cuke |',
+        '| Feature: First |',
+        '| Scenario: Scenario 1A |',
+        '| Given a scenario |',
+        '| Scenario: Scenario 1B |',
+        '| Given a scenario |',
+        '',
+        '| Table: Cuke |',
+        '| Feature: Second |',
+        '| Scenario: Scenario 2A |',
+        '| Given a scenario |',
+        '| Scenario: Scenario 2B |',
+        '| Given a scenario |',
+      ]
+      features = [
+        [
+          ['Feature: First'],
+          ['Scenario: Scenario 1A'],
+          ['Given a scenario'],
+          ['Scenario: Scenario 1B'],
+          ['Given a scenario'],
+        ],
+        [
+          ['Feature: Second'],
+          ['Scenario: Scenario 2A'],
+          ['Given a scenario'],
+          ['Scenario: Scenario 2B'],
+          ['Given a scenario'],
+        ],
+      ]
+      fitnesse_to_features(fitnesse).should == features
+    end
+
+    it "correctly interprets tables" do
+      fitnesse = [
+        '| Table: Cuke |',
+        '| Feature: Tables |',
+        '| Scenario: Table rows |',
+        '| Given a table: |',
+        '| | First | Last |',
+        '| | Eric  | Pierce |',
+        '| | Ken   | Brazier |',
+      ]
+      features = [
+        [
+          ['Feature: Tables'],
+          ['Scenario: Table rows'],
+          ['Given a table:'],
+          ['', 'First', 'Last'],
+          ['', 'Eric', 'Pierce'],
+          ['', 'Ken', 'Brazier'],
+        ],
+      ]
+      fitnesse_to_features(fitnesse).should == features
+    end
+
+    it "ignores non-table lines" do
+      fitnesse = [
+        'This text should be ignored',
+        '| Table: Cuke |',
+        '| Feature: Extra text |',
+        '| Scenario: Ignore extra text|',
+        '| Given a scenario |',
+        'This line should also be ignored',
+        'And this one too',
+      ]
+      features = [
+        [
+          ['Feature: Extra text'],
+          ['Scenario: Ignore extra text'],
+          ['Given a scenario'],
+        ],
+      ]
+      fitnesse_to_features(fitnesse).should == features
+    end
+
+    it "returns an empty list if no Cuke tables are present" do
+      fitnesse = [
+        'This wiki page has no Cuke tables',
+        'So there are no tables to parse',
+        '| there is | this table |',
+        '| but it is not | a Cuke table |',
+        '| so it will also | be ignored |',
+      ]
+      features = []
+      fitnesse_to_features(fitnesse).should == features
     end
   end
 

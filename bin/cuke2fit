@@ -11,7 +11,7 @@
 #   .feature file with |...| wrapping each line. Empty lines should be skipped.
 #
 
-require 'cukable/converter'
+require 'cukable/conversion'
 
 if ARGV.count == 0
   puts "Usage: cuke2fit.rb <features_path> <fitnesse_path>"

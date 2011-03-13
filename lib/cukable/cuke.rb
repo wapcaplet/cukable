@@ -21,7 +21,7 @@ module Cukable
   class Cuke
 
     include Cukable::Helper
-    #include Cukable::Converter
+    include Cukable::Conversion
 
     # Hash mapping the MD5 digest of a feature to the .json output for that
     # feature. Something of a hack, using a class variable for this, but it
@@ -184,66 +184,6 @@ module Cukable
         #raise "Cucumber failed to write '#{@results_filename}'"
       #end
     end
-
-
-    # Return an array of Cucumber tables found in the given FitNesse content
-    # file, or an empty array if no tables are found. Each table in the array
-    # is in the same format as a table passed to the `do_table` method; that is,
-    # a table is an array of rows, where each row is an array of strings found
-    # in each cell of the table.
-    #
-    # @param [Array, File] wiki_page
-    #   An iterable that yields each line of a FitNesse wiki page. May be
-    #   an open File object, or an Array of strings.
-    #
-    # @return [Array]
-    #   All Cucumber tables found in the given wiki page, or an empty array if
-    #   no tables are found.
-    #
-    def fitnesse_to_features(wiki_page)
-
-      tables = []         # List of all tables parsed so far
-      current_table = []  # List of lines in the current table
-      in_table = false    # Are we inside a table right now?
-
-      wiki_page.each do |line|
-        # Strip newline
-        line = line.strip
-
-        # Beginning of a new table?
-        if line =~ /\| *Table *: *Cuke *\| *$/
-          in_table = true
-          current_table = []
-
-        # Already in a table?
-        elsif in_table
-          # Append a new row to the current table, with pipes
-          # and leading/trailing whitespace removed
-          if line =~ /\| *(.*) *\| *$/
-            row = $1.split('|').collect { |cell| cell.strip }
-            current_table << row
-          # No more rows; end this table and append to the results
-          else
-            in_table = false
-            tables << current_table
-            current_table = []
-          end
-
-        else
-          # Ignore all non-table lines in the content
-        end
-      end
-
-      # If we're still inside a table, append it (this means that the last line
-      # of the table was the last line of the file, and there were no more
-      # lines after the table to terminate it)
-      if in_table
-        tables << current_table
-      end
-
-      return tables
-    end
-
 
   end
 end
