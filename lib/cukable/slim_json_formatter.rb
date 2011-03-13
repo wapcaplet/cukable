@@ -29,6 +29,9 @@ module Cucumber
         # Multi-line output (must be cached and printed after the step that
         # precedes it)
         @multiline = []
+
+        # Not in background until we actually find one
+        @in_background = false
       end
 
 
@@ -66,10 +69,20 @@ module Cucumber
       end
 
 
+      def before_background(background)
+        @in_background = true
+      end
+
+
       # Called when "Background:" is read
       # Generates a single row of SliM JSON output
       def background_name(keyword, name, file_colon_line, source_indent)
         @data << [section_message(keyword, name, file_colon_line)]
+      end
+
+
+      def after_background(background)
+        @in_background = false
       end
 
 
@@ -83,8 +96,11 @@ module Cucumber
       # later, in after_step_result, since they should follow the step's output)
       def after_table_row(table_row)
         if table_row.exception
-          # TODO: Output stack trace
-          @multiline << ["report: "] + table_row.collect {|cell| "fail: #{cell.value}"}
+          # FIXME: This prints a stack trace coloring the whole row red.
+          # Find a way to color only the failing *cell* red.
+          message = "fail:" + backtrace(table_row.exception)
+          fail_cells = table_row.collect {|cell| "fail: #{cell.value}"}
+          @multiline << ["fail:#{message}"] + fail_cells
         else
           @multiline << ["report: "] + table_row.collect {|cell| "pass: #{cell.value}"}
         end
@@ -144,11 +160,27 @@ module Cucumber
       end
 
 
+      def before_step_result(keyword, step_match, multiline_arg, status, exception, source_indent, background)
+        # To avoid redundant output, we want to show the results of
+        # 'Background' steps only once, within the 'Background' section (unless
+        # a background step somehow failed when it was executed at the top of a
+        # Scenario). Here, `background` is true if the step was defined in the
+        # Background section, and `@in_background` is true if we are actually
+        # inside the Background section during execution.
+        if status != :failed && @in_background ^ background
+          @hide_this_step = true
+        else
+          @hide_this_step = false
+        end
+      end
+
+
       # Called after a step has executed, and we have a result.
       # Generates a single row of SliM JSON output, including the status of the
       # completed step, along with one row for each line in a multi-line
       # argument (if any were provided).
       def after_step_result(keyword, step_match, multiline_arg, status, exception, source_indent, background)
+        return if @hide_this_step
         # One-line message to print
         message = ''
         # A bit of a hack here to support Scenario Outlines
@@ -178,10 +210,7 @@ module Cucumber
         elsif status == :failed
           message = "fail:#{step_name}"
           if exception
-            message += "<br/>" + sanitize(exception.message) + "<br/>"
-            message += exception.backtrace.collect { |line|
-              sanitize(line)
-            }.join("<br/>")
+            message += backtrace(exception)
           end
 
         # Color undefined steps yellow
@@ -240,6 +269,16 @@ module Cucumber
       # "Scenario:" or "Scenario Outline:" output rows.
       def section_message(keyword, name, file_colon_line='')
         "report:#{keyword}: #{name}" + source_message(file_colon_line)
+      end
+
+
+      # Return an exception message and backtrace
+      def backtrace(exception)
+        message = "<br/>" + sanitize(exception.message) + "<br/>"
+        message += exception.backtrace.collect { |line|
+          sanitize(line)
+        }.join("<br/>")
+        return message
       end
 
     end
