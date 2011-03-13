@@ -13,6 +13,7 @@ require 'json'
 require 'fileutils'
 
 require 'cukable/helper'
+require 'cukable/conversion'
 
 class FormatError < Exception
 end

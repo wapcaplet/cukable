@@ -23,13 +23,14 @@ module Cukable
     # Wikify (CamelCase) the given string, removing spaces, underscores, dashes
     # and periods, and CamelCasing the remaining words. If this does not result
     # in a CamelCase word with at least two words in it (that is, if the input was
-    # only a single word), 'Wiki' is appended to ensure a valid WikiWord.
+    # only a single word), then the last letter in the word is capitalized so
+    # as to make FitNesse happy.
     #
     # @example
     #   wikify("file.extension")   #=> "FileExtension"
     #   wikify("with_underscore")  #=> "WithUnderscore"
     #   wikify("having spaces")    #=> "HavingSpaces"
-    #   wikify("foo")              #=> "FooWiki"
+    #   wikify("foo")              #=> "FoO"
     #
     # @param [String] string
     #   String to wikify
@@ -37,13 +38,17 @@ module Cukable
     # @return [String]
     #   Wikified string
     #
+    # FIXME: This will not generate valid FitNesse wiki page names for
+    # pathological cases, such as any input that would result in consecutive
+    # capital letters, including words having only two letters in them.
+    #
     def wikify(string)
       string.gsub!(/^[a-z]|[_.\s\-]+[a-z]/) { |a| a.upcase }
       string.gsub!(/[_.\s\-]/, '')
       if string =~ /(([A-Z][a-z]*){2})/
         return string
       else
-        return "#{string}Wiki"
+        return string.gsub(/.\b/) { |c| c.upcase }
       end
     end
 
@@ -67,12 +72,11 @@ module Cukable
 
     # Wikify the given path name, and return a path that's suitable
     # for use as a FitNesse wiki page path. Any path component having only
-    # a single word in it will have the word 'Wiki' appended, to ensure
-    # that it is a valid WikiWord.
+    # a single word in it will have the last letter in that word capitalized.
     #
     # @example
     #   wikify_path('features/account/create.feature')
-    #     #=> 'FeaturesWiki/AccountWiki/CreateFeature'
+    #     #=> 'FeatureS/AccounT/CreateFeature'
     #
     # @param [String] path
     #   Arbitrary path name to convert

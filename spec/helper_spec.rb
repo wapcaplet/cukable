@@ -28,9 +28,9 @@ describe Cukable::Helper do
       end
     end
 
-    it "appends 'Wiki' to single-word inputs" do
-      wikify("name").should == "NameWiki"
-      wikify("quest").should == "QuestWiki"
+    it "capitalizes the last letter of single-word inputs" do
+      wikify("name").should == "NamE"
+      wikify("quest").should == "QuesT"
     end
 
     it "leaves already-CamelCased inputs unchanged" do
@@ -47,9 +47,9 @@ describe Cukable::Helper do
       wikify_path("hello_world/readme.txt").should == "HelloWorld/ReadmeTxt"
     end
 
-    it "appends 'Wiki' to single-word path components" do
-      wikify_path("features/basic").should == "FeaturesWiki/BasicWiki"
-      wikify_path("features/basic/some.feature").should == "FeaturesWiki/BasicWiki/SomeFeature"
+    it "capitalizes the last letter of single-word path components" do
+      wikify_path("features/basic").should == "FeatureS/BasiC"
+      wikify_path("features/basic/some.feature").should == "FeatureS/BasiC/SomeFeature"
     end
   end
 

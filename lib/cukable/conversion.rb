@@ -160,7 +160,7 @@ module Cukable
       # For each .feature file
       features.each do |feature_path|
         # Determine the appropriate wiki path name
-        wiki_path = File.join(fitnesse_path, wikify_path(filename))
+        wiki_path = File.join(fitnesse_path, wikify_path(feature_path))
         # Fill that wiki path with content stubs
         create_content_stubs(wiki_path)
         # Convert the .feature to wikitext
