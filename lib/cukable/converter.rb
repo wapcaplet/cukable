@@ -36,7 +36,7 @@ module Cukable
         # Fill that wiki path with content stubs
         create_content_stubs(wiki_path)
         # Convert the .feature to wikitext
-        content = wikify_feature(File.open(feature_path))
+        content = feature_to_fitnesse(File.open(feature_path)).join("\n")
         # Write the wikitext to a wiki page
         create_wiki_page(wiki_path, content, 'test')
         # Show user some status output
@@ -111,16 +111,16 @@ module Cukable
     end
 
 
-    # Wikify the given feature, and return FitNesse wikitext.
+    # Wikify the given feature, and return lines of FitNesse wikitext.
     #
     # @param [Array, File] feature
-    #   An iterable that yields each line in a Cucumber feature. May be
-    #   an open File object, or an Array of lines.
+    #   An iterable that yields each line of a Cucumber feature. May be
+    #   an open File object, or an Array of strings.
     #
-    # @return [String]
-    #   FitNesse wikitext, containing a table with all scenarios in the feature
+    # @return [Array]
+    #   FitNesse wikitext as a list of strings
     #
-    def wikify_feature(feature)
+    def feature_to_fitnesse(feature)
 
       # Unparsed text (between 'Feature:' line and the first Background/Scenario)
       unparsed = []
@@ -165,8 +165,11 @@ module Cukable
 
         end
       end
-      # Join with newlines, and add one more newline at the end
-      return unparsed.join("\n") + "\n\n" + table.join("\n") + "\n"
+      # If there was unparsed text, include an empty line after it
+      if !unparsed.empty?
+        unparsed << ''
+      end
+      return unparsed + table
     end
 
 

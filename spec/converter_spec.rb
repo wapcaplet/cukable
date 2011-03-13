@@ -5,7 +5,7 @@ describe Cukable::Converter do
     @converter = Cukable::Converter.new
   end
 
-  context "#wikify_feature" do
+  context "#feature_to_fitnesse" do
     it "adds table markup" do
       feature = [
         'Feature: User account',
@@ -21,8 +21,8 @@ describe Cukable::Converter do
         '| When I am on the login page |',
         '| And I fill in "Username" with "Eric" |',
         '| And I fill in "Password" with "foobar" |',
-      ].join("\n")
-      @converter.wikify_feature(feature).strip.should == wiki
+      ]
+      @converter.feature_to_fitnesse(feature).should == wiki
     end
 
     it "includes unparsed text" do
@@ -43,8 +43,8 @@ describe Cukable::Converter do
         '| Feature: User account |',
         '| Scenario: Login |',
         '| When I am on the login page |',
-      ].join("\n")
-      @converter.wikify_feature(feature).strip.should == wiki
+      ]
+      @converter.feature_to_fitnesse(feature).should == wiki
     end
 
     it "correctly marks up table rows" do
@@ -70,8 +70,8 @@ describe Cukable::Converter do
         '| | Ken      | barfoo   |',
         '| Scenario: Login |',
         '| When I am on the login page |',
-      ].join("\n")
-      @converter.wikify_feature(feature).strip.should == wiki
+      ]
+      @converter.feature_to_fitnesse(feature).should == wiki
     end
 
     it "correctly marks up scenario outlines with examples" do
@@ -97,8 +97,8 @@ describe Cukable::Converter do
         '| | page   | text        |',
         '| | home   | Relax       |',
         '| | office | Get to work |',
-      ].join("\n")
-      @converter.wikify_feature(feature).strip.should == wiki
+      ]
+      @converter.feature_to_fitnesse(feature).should == wiki
     end
 
     it "correctly includes multi-line strings" do
@@ -121,8 +121,8 @@ describe Cukable::Converter do
         '| Hello world |',
         '| Goodbye world |',
         '| """ |',
-      ].join("\n")
-      @converter.wikify_feature(feature).strip.should == wiki
+      ]
+      @converter.feature_to_fitnesse(feature).should == wiki
     end
   end
 

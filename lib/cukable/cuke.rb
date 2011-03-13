@@ -21,6 +21,7 @@ module Cukable
   class Cuke
 
     include Cukable::Helper
+    #include Cukable::Converter
 
     # Hash mapping the MD5 digest of a feature to the .json output for that
     # feature. Something of a hack, using a class variable for this, but it
@@ -89,7 +90,7 @@ module Cukable
         feature = clean_filename(fitnesse_filename, suite, 'content.txt')
         number = 0
         # For all feature tables in the content file
-        cuke_tables(fitnesse_filename).each do |table|
+        fitnesse_to_features(File.open(fitnesse_filename)).each do |table|
           # Write the table to a .feature file with a unique name
           feature_filename = File.join(
             @features_dir, "#{feature}_#{number}.feature")
@@ -190,13 +191,22 @@ module Cukable
     # is in the same format as a table passed to the `do_table` method; that is,
     # a table is an array of rows, where each row is an array of strings found
     # in each cell of the table.
-    def cuke_tables(fitnesse_filename)
+    #
+    # @param [Array, File] wiki_page
+    #   An iterable that yields each line of a FitNesse wiki page. May be
+    #   an open File object, or an Array of strings.
+    #
+    # @return [Array]
+    #   All Cucumber tables found in the given wiki page, or an empty array if
+    #   no tables are found.
+    #
+    def fitnesse_to_features(wiki_page)
 
       tables = []         # List of all tables parsed so far
       current_table = []  # List of lines in the current table
       in_table = false    # Are we inside a table right now?
 
-      File.open(fitnesse_filename).each do |line|
+      wiki_page.each do |line|
         # Strip newline
         line = line.strip
 
