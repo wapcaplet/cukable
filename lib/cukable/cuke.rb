@@ -39,25 +39,32 @@ module Cukable
 
 
     # Fixture method call.  Pass the path of the suite. (RubySlim.HelloWorld, for example.)
-    def run_suite(suite_name, parent='')
-      # Remove wiki cruft from the suite_name
-      suite_name = remove_cruft(suite_name)
+    def accelerate(test_name, parent='')
+      # Remove wiki cruft from the test_path
+      test_name = remove_cruft(test_name)
+
+      # Don't run the accelerator unless we're on a page called AaaAccelerator
+      if !(test_name =~ /^.*AaaAccelerator$/)
+        return true
+      else
+        # Get the suite path (everything up to the last '.')
+        parts = test_name.split('.')
+        suite_path = parts[0..-2].join('/')
+      end
 
       # Verify that a higher-level accelerator has not already run analyzeSuite
       # covering this part of the tree. E.g. RubySlim.HelloWorld.NewTest starts
       # with "RubySlim.HelloWorld". But RubySlim.NewTest does not start with
       # "RubySlim.HelloWorld".
-      if @@lastSuiteName != nil && suite_name =~ /^#{@@lastSuiteName}/
-        puts "@@lastSuiteName: #{@@lastSuiteName}"
-        return true;
+      if @@lastSuiteName != nil && suite_path =~ /^#{@@lastSuiteName}/
+        return true
+      else
+        @@lastSuiteName = suite_path
       end
-      @@lastSuiteName = suite_name
-
-      suitePath = suite_name.gsub('.', '/')
 
       # Find the FitNesseRoot.
       # Find the suite in the FitNesseRoot.
-      suite = "FitNesseRoot/"+suitePath
+      suite = "FitNesseRoot/" + suite_path
 
       # Delete and recreate @features_dir and @output_dir
       # FIXME: May need to be smarter about this--what happens if

@@ -121,6 +121,29 @@ describe Cukable::Conversion do
       ]
       feature_to_fitnesse(feature).should == fitnesse
     end
+
+    it "outputs @tags on separate lines" do
+      feature = [
+        '@tag_a @tag_b',
+        'Feature: Tags',
+        '',
+        '  @tag_c @tag_d @tag_e',
+        '  Scenario: Tags',
+        '    Given a scenario',
+      ]
+      fitnesse = [
+        '| Table: Cuke |',
+        '| @tag_a |',
+        '| @tag_b |',
+        '| Feature: Tags |',
+        '| @tag_c |',
+        '| @tag_d |',
+        '| @tag_e |',
+        '| Scenario: Tags |',
+        '| Given a scenario |',
+      ]
+      feature_to_fitnesse(feature).should == fitnesse
+    end
   end
 
 

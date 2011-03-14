@@ -160,15 +160,20 @@ module Cukable
         raise ArgumentError, "FitNesse path must be an existing directory."
       end
 
+      # Create a root-level suite and SetUp page
+      root_path = File.join(fitnesse_path, wikify_path(features_path))
+      create_feature_root(root_path)
+      create_setup_page(root_path)
+
       # Get all .feature files
       features = Dir.glob(File.join(features_path, '**', '*feature'))
 
-      # For each .feature file
+      # Create a test page for each .feature file
       features.each do |feature_path|
         # Determine the appropriate wiki path name
         wiki_path = File.join(fitnesse_path, wikify_path(feature_path))
-        # Fill that wiki path with content stubs
-        create_content_stubs(wiki_path)
+        # Fill ancestors of the wiki path with stubs for suites
+        create_suite_stubs(File.dirname(wiki_path))
         # Convert the .feature to wikitext
         content = feature_to_fitnesse(File.open(feature_path)).join("\n")
         # Write the wikitext to a wiki page
@@ -221,7 +226,7 @@ module Cukable
     # ancestor directories, if a `content.txt` does not already exist.
     #
     # @example
-    #   create_content_stubs('FitNesseRoot/PageOne/PageTwo/PageThree')
+    #   create_suite_stubs('FitNesseRoot/PageOne/PageTwo/PageThree')
     #     # Creates these files, and their containing directories:
     #     #   FitNesseRoot/PageOne/content.txt
     #     #   FitNesseRoot/PageOne/PageTwo/content.txt
@@ -231,7 +236,7 @@ module Cukable
     #   Directory name of deepest level in the wiki hierarchy where
     #   you want content stubs to be created
     #
-    def create_content_stubs(fitnesse_path)
+    def create_suite_stubs(fitnesse_path)
       # Content string to put in each stub file
       content = '!contents -R9 -p -f -h'
       # Starting with `fitnesse_path`
@@ -240,11 +245,53 @@ module Cukable
       while path != '.'
         # If there is no content.txt file, create one
         if !File.exists?(File.join(path, 'content.txt'))
-          create_wiki_page(path, content)
+          create_wiki_page(path, content, 'suite')
+        end
+        # If there is no accelerator child, create one
+        if !File.directory?(File.join(path, 'AaaAccelerator'))
+          create_accelerator(path)
         end
         # Get the parent path
         path = File.dirname(path)
       end
+    end
+
+
+    # Create a page at the top level of the converted features,
+    # containing variable definitions needed to invoke rubyslim
+    def create_feature_root(fitnesse_path)
+      FileUtils.mkdir_p(fitnesse_path)
+      content = [
+        '!define TEST_SYSTEM {slim}',
+        '!define TEST_RUNNER {rubyslim}',
+        '!define COMMAND_PATTERN {rubyslim}',
+        '',
+        '!contents -R9 -p -f -h',
+      ].join("\n")
+      create_wiki_page(fitnesse_path, content, 'suite')
+    end
+
+
+    # Create a SetUp page as a child of the given path.
+    def create_setup_page(fitnesse_path)
+      setup_path = File.join(fitnesse_path, 'SetUp')
+      FileUtils.mkdir_p(setup_path)
+      content = [
+        '!| import |',
+        '| Cukable |',
+        '',
+        '| script | Cuke |',
+        '| accelerate | ${PAGE_PATH}.${PAGE_NAME} |',
+      ].join("\n")
+      create_wiki_page(setup_path, content)
+    end
+
+
+    # Create an empty `AaaAccelerator` page under the given path.
+    def create_accelerator(fitnesse_path)
+      accel_path = File.join(fitnesse_path, 'AaaAccelerator')
+      FileUtils.mkdir_p(accel_path)
+      create_wiki_page(accel_path, '', 'test')
     end
 
   end
