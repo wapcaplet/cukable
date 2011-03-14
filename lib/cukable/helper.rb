@@ -72,7 +72,9 @@ module Cukable
       # http://stackoverflow.com/questions/703060/valid-email-address-regular-expression
       result.gsub!(/([\w\-]+@([\w\-]+\.)+[\w\-]+)/, '!-\1-!')
       # Literalize CamelCase words
-      result.gsub!(/(([A-Z][a-z]+){2,99})/, '!-\1-!')
+      # Regex for matching wiki words, according to FitNesse.UserGuide.WikiWord
+      #   \b[A-Z](?:[a-z0-9]+[A-Z][a-z0-9]*)+
+      result.gsub!(/(\b[A-Z](?:[a-z0-9]+[A-Z][a-z0-9]*)+)/, '!-\1-!')
       # FIXME: CamelCase words inside of email addresses will cause havoc!
       return result
     end
@@ -100,8 +102,8 @@ module Cukable
     end
 
 
-    # Return an MD5 digest string for `table`. Any HTML entities in the table
-    # are unescaped before the digest is calculated.
+    # Return an MD5 digest string for `table`. Any HTML entities and FitNesse
+    # markup in the table is unescaped before the digest is calculated.
     #
     # @param [Array] table
     #   Array of strings, or nested Array of strings
@@ -118,9 +120,11 @@ module Cukable
     end
 
 
-    # Unescape any HTML entities in the given string
+    # Unescape any HTML entities and FitNesse markup in the given string
     def unescape(string)
-      return CGI.unescapeHTML(string)
+      result = CGI.unescapeHTML(string)
+      result.gsub!(/!-(.*?)-!/, '\1')
+      return result
     end
 
   end
