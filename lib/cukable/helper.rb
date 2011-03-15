@@ -53,8 +53,8 @@ module Cukable
     end
 
 
-    # Return the given string with any CamelCase words and email addresses
-    # escaped with FitNesse's `!-...-!` string-literal markup.
+    # Return the given string with any CamelCase words, email addresses, and
+    # URLs escaped with FitNesse's `!-...-!` string-literal markup.
     #
     # @example
     #   literalize("With a CamelCase word") #=> "With a !-CamelCase-! word"
@@ -65,17 +65,25 @@ module Cukable
     # @return [String]
     #   Same string with CamelCase words escaped
     #
+    # FIXME: Literals inside other literals will cause too much escaping!
     def literalize(string)
       result = string.strip
+
       # Literalize email addresses (this is a very simplified email regexp, and
       # will miss some obscure cases; see:
       # http://stackoverflow.com/questions/703060/valid-email-address-regular-expression
-      result.gsub!(/([\w\-]+@([\w\-]+\.)+[\w\-]+)/, '!-\1-!')
+      result.gsub!(/([\w\-]+@([\w\-]+\.)+)/, '!-\1-!')
+
       # Literalize CamelCase words
       # Regex for matching wiki words, according to FitNesse.UserGuide.WikiWord
       #   \b[A-Z](?:[a-z0-9]+[A-Z][a-z0-9]*)+
       result.gsub!(/(\b[A-Z](?:[a-z0-9]+[A-Z][a-z0-9]*)+)/, '!-\1-!')
-      # FIXME: CamelCase words inside of email addresses will cause havoc!
+
+      # Literalize URLs
+      # Brain-dead URL matcher, should do the trick in most cases though
+      # (Better to literalize too much than not enough)
+      result.gsub!(/(http[^ ]+)/, '!-\1-!')
+
       return result
     end
 
