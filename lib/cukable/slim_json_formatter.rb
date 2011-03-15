@@ -1,7 +1,10 @@
 require 'cucumber/formatter/console'
 require 'cucumber/formatter/io'
 require 'fileutils'
-require 'json'
+
+# Using json/pure, because JSON.pretty_generate is not pretty in Rails 2.3.5
+require 'json/pure'
+
 
 module Cucumber
   module Formatter
@@ -89,6 +92,20 @@ module Cucumber
       # Start a new multiline arg (such as a table)
       def before_multiline_arg(multiline_arg)
         @multiline = []
+        @expected_row = []
+        @actual_row = []
+      end
+
+
+      def before_table_row(table_row)
+        @table_row = []
+      end
+
+
+      def table_cell_value(value, status)
+        return if @hide_this_step
+        stat = status_map[status]
+        @table_row << "#{stat}:#{value}"
       end
 
 
@@ -96,15 +113,54 @@ module Cucumber
       # later, in after_step_result, since they should follow the step's output)
       def after_table_row(table_row)
         return if @hide_this_step
-        if table_row.exception
-          # FIXME: This prints a stack trace coloring the whole row red.
-          # Find a way to color only the failing *cell* red.
-          message = "fail:" + backtrace(table_row.exception)
-          fail_cells = table_row.collect {|cell| "fail: #{cell.value}"}
-          @multiline << ["fail:#{message}"] + fail_cells
-        else
-          @multiline << ["report: "] + table_row.collect {|cell| "pass: #{cell.value}"}
+
+        # When doing a table diff, and a row doesn't match, two rows are
+        # generated. These need to be merged into a single row in the JSON
+        # output, to maintain the 1:1 mapping between FitNesse table and
+        # the returned results.
+
+        # If we have an @expected_row and @actual_row at this point,
+        # merge them into a single row and append to @multiline_arg
+        if !@expected_row.empty? && !@actual_row.empty?
+          cell_diff = []
+          @expected_row.zip(@actual_row) do |expect, actual|
+            expect.gsub!(/^ignore:/, '')
+            actual.gsub!(/^error:/, '')
+            # If we got what we wanted in this cell, consider it passed
+            if actual == expect
+              cell_diff << "pass:#{actual}"
+            # Otherwise, show expected vs. actual as a failure
+            else
+              cell_diff << "fail:Expected: '#{expect}'<br/>Actual: '#{actual}'"
+            end
+          end
+          @multiline << ["report: "] + cell_diff
+          # Reset for upcoming rows
+          @expected_row = []
+          @actual_row = []
         end
+
+        # Row with all cells having status == :comment (ignore)?
+        # This row was part of a table diff, and contains the values
+        # that were expected to be in the row.
+        if @table_row.all? { |cell| cell =~ /^ignore:/ }
+          @expected_row = @table_row
+
+        # Row with all cells having status == :undefined (error)?
+        # This row was part of a table diff, and contains the values
+        # that actually appeared in the row.
+        elsif @table_row.all? { |cell| cell =~ /^error:/ }
+          @actual_row = @table_row
+
+        # For any other row, append to multiline normally
+        else
+          @multiline << ["report: "] + @table_row
+          # FIXME: This may not work (could add too many rows)
+          #if table_row.exception
+            #@multiline << ["fail:#{backtrace(table_row.exception)}"]
+          #end
+        end
+
       end
 
 
@@ -204,29 +260,19 @@ module Cucumber
           step_name = keyword + step_match.format_args("<b>%s</b>")
         end
 
-        # Color passed steps green
-        if status == :passed
-          message = "pass:#{step_name}"
-
-        # Color failed steps red, and include the error message and stack trace
-        elsif status == :failed
-          message = "fail:#{step_name}"
-          if exception
-            message += backtrace(exception)
-          end
-
-        # Color undefined steps yellow
-        elsif status == :undefined
-          message = "error:#{step_name}<br/>(Undefined Step)"
-
-        # Color skipped steps grey
-        elsif status == :skipped
-          message = "ignore:#{step_name}"
-
-        end
+        # Output the step name with appropriate colorization
+        stat = status_map[status]
+        message = "#{stat}:#{step_name}"
 
         # Add the source file and line number where this step was defined
         message += source_message(step_match.file_colon_line)
+
+        # Include additional info for undefined and failed steps
+        if status == :undefined
+          message += "<br/>(Undefined Step)"
+        elsif status == :failed && exception
+          message += backtrace(exception)
+        end
 
         # Output the final message for this step
         @data << [message]
@@ -247,10 +293,12 @@ module Cucumber
       # Map Cucumber status strings to FitNesse status strings
       def status_map
         {
+          nil => 'pass',
           :passed => 'pass',
           :failed => 'fail',
           :undefined => 'error',
           :skipped => 'ignore',
+          :comment => 'ignore',
         }
       end
 
