@@ -1,9 +1,7 @@
 require 'cucumber/formatter/console'
 require 'cucumber/formatter/io'
 require 'fileutils'
-
-# Using json/pure, because JSON.pretty_generate is not pretty in Rails 2.3.5
-require 'json/pure'
+require 'json'
 
 
 module Cucumber
@@ -104,7 +102,7 @@ module Cucumber
 
       def table_cell_value(value, status)
         return if @hide_this_step
-        stat = status_map[status]
+        stat = status_map(status)
         @table_row << "#{stat}:#{value}"
       end
 
@@ -156,9 +154,9 @@ module Cucumber
         else
           @multiline << ["report: "] + @table_row
           # FIXME: This may not work (could add too many rows)
-          #if table_row.exception
-            #@multiline << ["fail:#{backtrace(table_row.exception)}"]
-          #end
+          if table_row.exception
+            @multiline << ["fail:#{backtrace(table_row.exception)}"]
+          end
         end
 
       end
@@ -200,7 +198,7 @@ module Cucumber
       # the status of the current step.
       def py_string(string)
         return if @hide_this_step
-        status = status_map[@current_step.status]
+        status = status_map(@current_step.status)
         @multiline << [status + ':"""']
         string.split("\n").each do |line|
           @multiline << ["#{status}:#{line}"]
@@ -261,7 +259,7 @@ module Cucumber
         end
 
         # Output the step name with appropriate colorization
-        stat = status_map[status]
+        stat = status_map(status)
         message = "#{stat}:#{step_name}"
 
         # Add the source file and line number where this step was defined
@@ -291,15 +289,16 @@ module Cucumber
       # ------------------------
 
       # Map Cucumber status strings to FitNesse status strings
-      def status_map
-        {
-          nil => 'pass',
-          :passed => 'pass',
-          :failed => 'fail',
-          :undefined => 'error',
-          :skipped => 'ignore',
-          :comment => 'ignore',
-        }
+      def status_map(status)
+        case status
+          when nil        then 'pass'
+          when :passed    then 'pass'
+          when :failed    then 'fail'
+          when :undefined then 'error'
+          when :skipped   then 'ignore'
+          when :comment   then 'ignore'
+          else 'pass'
+        end
       end
 
 

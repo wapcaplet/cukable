@@ -4,11 +4,26 @@ describe Cukable::Helper do
 
   context "#literalize" do
     it "escapes CamelCase words" do
+      literalize("E2E").should == "!-E2E-!"
+      literalize("BoB").should == "!-BoB-!"
+      literalize("CamelCase").should == "!-CamelCase-!"
       literalize("Has a CamelCase word").should == "Has a !-CamelCase-! word"
+      literalize("CamelCase at start").should == "!-CamelCase-! at start"
+      literalize("ending with CamelCase").should == "ending with !-CamelCase-!"
     end
 
     it "escapes email addresses" do
       literalize("epierce@foo-bar.com").should == "!-epierce@foo-bar.com-!"
+      literalize("Email epierce@foo-bar.com").should == "Email !-epierce@foo-bar.com-!"
+      literalize("epierce@foo-bar.com is my email").should == "!-epierce@foo-bar.com-! is my email"
+      literalize("Email epierce@foo-bar.com again").should == "Email !-epierce@foo-bar.com-! again"
+    end
+
+    it "escapes URLs" do
+      literalize("http://my.site/").should == "!-http://my.site/-!"
+      literalize("Go to http://my.site/").should == "Go to !-http://my.site/-!"
+      literalize("http://my.site/ is my site").should == "!-http://my.site/-! is my site"
+      literalize("My site http://my.site/ is cool").should == "My site !-http://my.site/-! is cool"
     end
   end
 
@@ -16,19 +31,41 @@ describe Cukable::Helper do
   context "#wikify" do
     context "recognizes word separators and strips them out" do
       it "underscores" do
-        wikify("name_with_underscores").should == "NameWithUnderscores"
+        wikify("one_underscore").should == "OneUnderscore"
+        wikify("two_under_scores").should == "TwoUnderScores"
+        wikify("_underscore_at_start").should == "UnderscoreAtStart"
+        wikify("underscore_at_end_").should == "UnderscoreAtEnd"
       end
 
       it "hyphens" do
-        wikify("name-with-hyphens").should == "NameWithHyphens"
+        wikify("one-hyphen").should == "OneHyphen"
+        wikify("with-two-hyphens").should == "WithTwoHyphens"
+        wikify("-hyphen-at-start").should == "HyphenAtStart"
+        wikify("hyphen-at-end-").should == "HyphenAtEnd"
       end
 
       it "spaces" do
-        wikify("name with spaces").should == "NameWithSpaces"
+        wikify("one space").should == "OneSpace"
+        wikify("with two spaces").should == "WithTwoSpaces"
+        wikify(" space at start").should == "SpaceAtStart"
+        wikify("space at end ").should == "SpaceAtEnd"
       end
 
       it "periods" do
-        wikify("name.with.periods").should == "NameWithPeriods"
+        wikify("one.period").should == "OnePeriod"
+        wikify("with.two.periods").should == "WithTwoPeriods"
+        wikify(".period.at.start").should == "PeriodAtStart"
+        wikify("period.at.end.").should == "PeriodAtEnd"
+      end
+
+      it "mixed periods, hyphens, underscores, and spaces" do
+        wikify("period.with space").should == "PeriodWithSpace"
+        wikify("period.with-hyphen").should == "PeriodWithHyphen"
+        wikify("period.with-underscore").should == "PeriodWithUnderscore"
+        wikify("under_with space").should == "UnderWithSpace"
+        wikify("under_with.period").should == "UnderWithPeriod"
+        wikify("under_with-hyphen").should == "UnderWithHyphen"
+        wikify("with_under.period-hyphen space").should == "WithUnderPeriodHyphenSpace"
       end
     end
 

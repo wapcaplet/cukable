@@ -69,10 +69,11 @@ module Cukable
     def literalize(string)
       result = string.strip
 
-      # Literalize email addresses (this is a very simplified email regexp, and
-      # will miss some obscure cases; see:
-      # http://stackoverflow.com/questions/703060/valid-email-address-regular-expression
-      result.gsub!(/([\w\-]+@([\w\-]+\.)+)/, '!-\1-!')
+      # Literalize email addresses
+      # FitNesse pattern for email addresses, per TextMaker.java:
+      #   [\w\-_.]+@[\w\-_.]+\.[\w\-_.]+
+      result.gsub!(/([\w\-_.]+@[\w\-_.]+\.[\w\-_.]+)/, '!-\1-!')
+
 
       # Literalize CamelCase words
       # Regex for matching wiki words, according to FitNesse.UserGuide.WikiWord
