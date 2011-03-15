@@ -35,13 +35,17 @@ module Cukable
       @features_dir = File.join('features', 'fitnesse')
       # Directory where JSON output files will be written by Cucumber
       @output_dir = 'slim_results'
+      @cucumber_args = ''
     end
 
 
     # Fixture method call.  Pass the path of the suite. (RubySlim.HelloWorld, for example.)
-    def accelerate(test_name, parent='')
+    def accelerate(test_name, cucumber_args='')
       # Remove wiki cruft from the test_path
       test_name = remove_cruft(test_name)
+      @cucumber_args = cucumber_args
+      #puts "(DEBUG) accelerate(#{test_name})"
+      #puts "(DEBUG) @@output_files: #{@@output_files.inspect}"
 
       # Don't run the accelerator unless we're on a page called AaaAccelerator
       if !(test_name =~ /^.*AaaAccelerator$/)
@@ -57,8 +61,10 @@ module Cukable
       # with "RubySlim.HelloWorld". But RubySlim.NewTest does not start with
       # "RubySlim.HelloWorld".
       if @@lastSuiteName != nil && suite_path =~ /^#{@@lastSuiteName}/
+        #puts "(DEBUG) Already ran accelerator #{suite_path} as part of #{@@lastSuiteName}"
         return true
       else
+        #puts "(DEBUG) First time running suite: #{suite_path}"
         @@lastSuiteName = suite_path
       end
 
@@ -103,9 +109,21 @@ module Cukable
           feature_filename = File.join(
             @features_dir, "#{feature}_#{number}.feature")
           feature_filenames << feature_filename
-          write_feature(table, feature_filename)
+          begin
+            write_feature(table, feature_filename)
+          rescue FormatError => err
+            puts "!!!! Error writing #{feature_filename}:"
+            puts err.message
+            puts err.backtrace.inspect
+            puts ".... Continuing anyway."
+          end
 
           # Store the JSON filename in the digest hash
+          #puts "(DEBUG) In write_suite_features"
+          #puts "(DEBUG) Table is:"
+          #table.each do |row|
+            #puts row.inspect
+          #end
           digest = table_digest(table)
           json_filename = File.join(@output_dir, "#{feature_filename}.json")
           @@output_files[digest] = json_filename
@@ -118,14 +136,23 @@ module Cukable
     # Process the given Cucumber table, containing one step per line
     # Table Table fixture method call.
     def do_table(table)
+      #puts "(DEBUG) In do_table"
+      #puts "(DEBUG) @@output_files: #{@@output_files.inspect}"
+      #puts "(DEBUG) Table is:"
+      #table.each do |row|
+        #puts row.inspect
+      #end
+
       # If the digest of this table already exists in @output files,
       # simply return the results that were already generated.
       existing = @@output_files[table_digest(table)]
       if existing
+        #puts "(DEBUG) Existing results"
         results = existing
       # Otherwise, run Cucumber from scratch on this table,
       # and return the results
       else
+        #puts "(DEBUG) NO Existing results"
         # FIXME: Move this to a separate method?
         # Create @features_dir if it doesn't exist
         FileUtils.mkdir(@features_dir) unless File.directory?(@features_dir)
@@ -135,13 +162,21 @@ module Cukable
         run_cucumber([feature_filename], @output_dir)
         results = File.join(@output_dir, "#{feature_filename}.json")
       end
-      return JSON.load(File.open(results))
+
+      # If the results file exists, parse it and return the results
+      if File.exist?(results)
+        return JSON.load(File.open(results))
+      # Otherwise, return an 'ignore' for all rows/cells in the table
+      else
+        return table.collect { |row| row.collect { |cell| 'ignore' } }
+      end
     end
 
 
     # Write a Cucumber .feature file containing the lines of Gherkin text
     # found in `table`, where `table` is an array of arrays of strings.
     def write_feature(table, feature_filename)
+      #puts "(DEBUG) Writing '#{feature_filename}'"
       # Have 'Feature:' or 'Scenario:' been found in the input?
       got_feature = false
       got_scenario = false
@@ -181,11 +216,13 @@ module Cukable
     # Run cucumber on `feature_filenames`, and output
     # results in FitNesse table format to `output_dir`.
     def run_cucumber(feature_filenames, output_dir)
+      #puts "(DEBUG) Running cucumber on #{feature_filenames.inspect}"
       format = "--format Cucumber::Formatter::SlimJSON"
       output = "--out #{output_dir}"
+      args = @cucumber_args
       features = feature_filenames.join(" ")
 
-      system "cucumber #{format} #{output} #{features}"
+      system "cucumber #{format} #{output} #{args} #{features}"
 
       # TODO: Ensure that the correct number of output files were written
       #if !File.exist?(@results_filename)
