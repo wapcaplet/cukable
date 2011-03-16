@@ -56,10 +56,18 @@ class CukableHelper
           Given /^a step is skipped$/ do
             true.should == true
           end
+          Given /^I have a table:$/ do |table|
+            table.raw.each do |row|
+              row.each do |cell|
+                cell.should == 'OK'
+              end
+            end
+          end
         EOF
       end
     end
   end
+
 
   # Create a file relative to `test_dir`
   def create_file(filename, content)

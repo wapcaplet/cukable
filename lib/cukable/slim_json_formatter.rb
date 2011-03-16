@@ -30,6 +30,9 @@ module Cucumber
         # Multi-line output (must be cached and printed after the step that
         # precedes it)
         @multiline = []
+        # Expected/actual, to support table diffs
+        @expected_row = []
+        @actual_row = []
 
         # Not in background until we actually find one
         @in_background = false

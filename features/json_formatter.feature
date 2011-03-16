@@ -3,6 +3,7 @@ Feature: Slim JSON Formatter
   Background:
     Given a standard Cucumber project directory structure
 
+
   Scenario: Passing step
     Given a file named "features/passing.feature" with:
       """
@@ -14,11 +15,12 @@ Feature: Slim JSON Formatter
     Then "slim/features/passing.feature.json" should contain JSON:
       """
         [
-          ["report:Feature: Passing <span class=\"source_file\"></span>"],
-          ["report:Scenario: Passing <span class=\"source_file\">features/passing.feature:2</span>"],
-          ["pass:Given a step passes <span class=\"source_file\">features/step_definitions/simple_steps.rb:1</span>"]
+          ["report:Feature: Passing"],
+          ["report:Scenario: Passing"],
+          ["pass:Given a step passes"]
         ]
       """
+
 
   Scenario: Failing step
     Given a file named "features/failing.feature" with:
@@ -31,11 +33,12 @@ Feature: Slim JSON Formatter
     Then "slim/features/failing.feature.json" should contain JSON:
       """
         [
-          ["report:Feature: Failing <span class=\"source_file\"></span>"],
-          ["report:Scenario: Failing <span class=\"source_file\">features/failing.feature:2</span>"],
-          ["fail:Given a step fails <span class=\"source_file\">features/step_definitions/simple_steps.rb:4</span><br/>expected: false\n     got: true (using ==)<br/>./features/step_definitions/simple_steps.rb:5:in `/^a step fails$/'<br/>features/failing.feature:3:in `Given a step fails'"]
+          ["report:Feature: Failing"],
+          ["report:Scenario: Failing"],
+          ["fail:Given a step fails"]
         ]
       """
+
 
   Scenario: Undefined step
     Given a file named "features/undefined.feature" with:
@@ -48,11 +51,12 @@ Feature: Slim JSON Formatter
     Then "slim/features/undefined.feature.json" should contain JSON:
       """
         [
-          ["report:Feature: Undefined <span class=\"source_file\"></span>"],
-          ["report:Scenario: Undefined <span class=\"source_file\">features/undefined.feature:2</span>"],
-          ["error:Given a step is undefined <span class=\"source_file\">features/undefined.feature:3</span><br/>(Undefined Step)"]
+          ["report:Feature: Undefined"],
+          ["report:Scenario: Undefined"],
+          ["error:Given a step is undefined"]
         ]
       """
+
 
   Scenario: Skipped step
     Given a file named "features/skipped.feature" with:
@@ -66,11 +70,83 @@ Feature: Slim JSON Formatter
     Then "slim/features/skipped.feature.json" should contain JSON:
       """
         [
-          ["report:Feature: Skipped <span class=\"source_file\"></span>"],
-          ["report:Scenario: Skipped <span class=\"source_file\">features/skipped.feature:2</span>"],
-          ["fail:When a step fails <span class=\"source_file\">features/step_definitions/simple_steps.rb:4</span><br/>expected: false\n     got: true (using ==)<br/>./features/step_definitions/simple_steps.rb:5:in `/^a step fails$/'<br/>features/skipped.feature:3:in `When a step fails'"],
-          ["ignore:Then a step is skipped <span class=\"source_file\">features/step_definitions/simple_steps.rb:7</span>"]
+          ["report:Feature: Skipped"],
+          ["report:Scenario: Skipped"],
+          ["fail:When a step fails"],
+          ["ignore:Then a step is skipped"]
         ]
       """
 
+
+  Scenario: Passing table
+    Given a file named "features/passing_table.feature" with:
+      """
+      Feature: Passing table
+        Scenario: Passing table
+          When I have a table:
+            | OK | OK | OK |
+            | OK | OK | OK |
+      """
+    When I run cucumber on "features/passing_table.feature"
+    Then "slim/features/passing_table.feature.json" should contain JSON:
+      """
+        [
+          ["report:Feature: Passing table"],
+          ["report:Scenario: Passing table"],
+          ["pass:When I have a table:"],
+          ["report: ", "pass:OK", "pass:OK", "pass:OK"],
+          ["report: ", "pass:OK", "pass:OK", "pass:OK"]
+        ]
+      """
+
+
+  Scenario: Failing table
+    Given a file named "features/failing_table.feature" with:
+      """
+      Feature: Failing table
+        Scenario: Failing table
+          When I have a table:
+            | OK | OK   | OK |
+            | OK | FAIL | OK |
+      """
+    When I run cucumber on "features/failing_table.feature"
+    Then "slim/features/failing_table.feature.json" should contain JSON:
+      # FIXME: The table rows should probably not be marked 'pass' here!
+      """
+        [
+          ["report:Feature: Failing table"],
+          ["report:Scenario: Failing table"],
+          ["fail:When I have a table:"],
+          ["report: ", "pass:OK", "pass:OK", "pass:OK"],
+          ["report: ", "pass:OK", "pass:FAIL", "pass:OK"]
+        ]
+      """
+
+
+  Scenario: Scenario Outline
+    Given a file named "features/scenario_outline.feature" with:
+      """
+      Feature: Failing table
+        Scenario Outline: Outline
+          Given a step <result>
+
+          Examples:
+            | result |
+            | passes |
+            | fails |
+      """
+    When I run cucumber on "features/scenario_outline.feature"
+    Then "slim/features/scenario_outline.feature.json" should contain JSON:
+      """
+        [
+          ["report:Feature: Failing table"],
+          ["report:Scenario Outline: Outline"],
+          ["ignore:Given a step &lt;result&gt;"],
+          ["report:Examples: "],
+          ["report: ", "pass:result"],
+          ["report: ", "pass:passes"],
+          ["report: ", "fail:fails"],
+          ["fail:<br/>"]
+        ]
+      """
 
