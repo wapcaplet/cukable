@@ -310,11 +310,7 @@ module Cucumber
 
       # Return a string for outputting the source filename and line number
       def source_message(file_colon_line)
-        # Add some inline style, so this won't look terrible with the
-        # default FitNesse CSS
-        style = "float: right; padding-left: 1em; color: #aaa;"
-        span = " <span style=\"#{style}\" class=\"source_file\">"
-        return span + file_colon_line + '</span>'
+        return " <span class=\"source_file\">" + file_colon_line + '</span>'
       end
 
 

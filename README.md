@@ -15,8 +15,8 @@ Supported syntax
 Most of the standard Cucumber/Gherkin syntax is supported by Cukable, including:
 
 - Background sections
-- Scenarios and Scenario Outlines
-- Multi-line table arguments
+- Scenarios and Scenario Outlines with Examples
+- Multi-line table arguments and table diffing
 - Multi-line strings
 - Tags, including `@selenium`
 
