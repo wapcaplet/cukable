@@ -2,23 +2,34 @@ require 'rubygems'
 require 'rspec/core/rake_task'
 require 'cucumber/rake/task'
 
-RSpec::Core::RakeTask.new do |spec|
-  spec.pattern = 'spec/**/*_spec.rb'
-  spec.rspec_opts = ['--color', '--format doc']
+desc "Run RSpec and generate coverage report"
+RSpec::Core::RakeTask.new(:spec) do |t|
+  t.pattern = 'spec/**/*_spec.rb'
+  t.rspec_opts = ['--color', '--format doc']
+  t.rcov = true
+  t.rcov_opts = [
+    '--exclude /.gem/,/gems/,spec,features',
+    '--include lib/**/*.rb',
+    #'--aggregate coverage.data',
+  ]
 end
 
-desc "Generate RCov coverage report"
-RSpec::Core::RakeTask.new(:rcov) do |spec|
-  spec.pattern = 'spec/**/*_spec.rb'
-  spec.rspec_opts = ['--color', '--format doc']
-  spec.rcov = true
-  spec.rcov_opts = %w{--exclude osx\/objc,gems\/,spec\/,features\/}
-end
-
-desc "Run Cucumber and generate RCov report"
-Cucumber::Rake::Task.new(:features) do |t|
+desc "Run Cucumber and generate coverage report"
+Cucumber::Rake::Task.new(:cucumber) do |t|
   t.cucumber_opts = "--format pretty"
   t.rcov = true
-  t.rcov_opts = %w{--exclude gems\/ -i lib\/cukable\/slim_json_formatter.rb}
+  t.rcov_opts = [
+    '--exclude /.gem/,/gems/,spec,features',
+    '--include lib/**/*.rb',
+    #'--aggregate coverage.data',
+  ]
 end
 
+#namespace :rcov do
+  #desc "Run specs and features to generate aggregated coverage"
+  #task :all do |t|
+    #rm 'coverage.data' if File.exist?('coverage.data')
+    #Rake::Task['rcov:spec'].invoke
+    #Rake::Task['rcov:cucumber'].invoke
+  #end
+#end
