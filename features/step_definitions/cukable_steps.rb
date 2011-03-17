@@ -1,4 +1,6 @@
 require 'json'
+require 'cukable/cuke'
+
 
 Given /^a standard Cucumber project directory structure$/ do
   create_standard_cucumber_dir
@@ -37,6 +39,17 @@ Then /^"(.+)" should contain JSON:$/ do |filename, json_text|
       end
     end
   end
+end
+
+
+Given /^a Cuke fixture$/ do
+  @cuke = Cukable::Cuke.new
+end
+
+
+When /^I do this table:$/ do |table|
+  @cuke.do_table(table.raw)
+  @cuke.accelerate("foo")
 end
 
 

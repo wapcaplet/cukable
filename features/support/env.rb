@@ -1,3 +1,5 @@
+$:.unshift File.join(File.dirname(__FILE__), '../../lib')
+
 require 'rubygems'
 require 'fileutils'
 require 'tempfile'
@@ -37,7 +39,8 @@ class CukableHelper
   def create_env_rb
     in_test_dir do
       File.open('features/support/env.rb', 'w') do |file|
-        file.puts "require File.join(File.dirname(__FILE__) + '/../../../lib/cukable/slim_json_formatter')"
+        file.puts "$:.unshift File.join(File.dirname(__FILE__), '../../../lib')"
+        file.puts "require 'cukable/slim_json_formatter'"
       end
     end
   end

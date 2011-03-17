@@ -9,16 +9,22 @@
 #   | When        | I do some action       |
 #   | Then        | the result is correct  |
 
+# FIXME: This is a hack to support running cucumber features.
+# May have unwanted side-effects.
+$:.unshift File.join(File.dirname(__FILE__), '..')
+
 require 'json'
 require 'fileutils'
 
 require 'cukable/helper'
 require 'cukable/conversion'
 
-class FormatError < Exception
-end
-
 module Cukable
+
+  # Exception raised when a table is not in the expected format
+  class FormatError < Exception
+  end
+
   class Cuke
 
     include Cukable::Helper
@@ -217,12 +223,13 @@ module Cukable
     # results in FitNesse table format to `output_dir`.
     def run_cucumber(feature_filenames, output_dir)
       #puts "(DEBUG) Running cucumber on #{feature_filenames.inspect}"
+      req = "--require /home/eric/git/cukable/lib/"
       format = "--format Cucumber::Formatter::SlimJSON"
       output = "--out #{output_dir}"
       args = @cucumber_args
       features = feature_filenames.join(" ")
 
-      system "cucumber #{format} #{output} #{args} #{features}"
+      system "cucumber #{req} #{format} #{output} #{args} #{features}"
 
       # TODO: Ensure that the correct number of output files were written
       #if !File.exist?(@results_filename)

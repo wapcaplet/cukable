@@ -1,3 +1,6 @@
+# FIXME: This is a hack to support running cucumber features.
+# May have unwanted side-effects.
+$:.unshift File.join(File.dirname(__FILE__), '..')
 
 require 'fileutils'
 require 'cukable/helper'
