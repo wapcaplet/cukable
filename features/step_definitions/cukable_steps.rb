@@ -66,3 +66,12 @@ When /^I write features for suite "(.+)"$/ do |suite_name|
   end
 end
 
+
+When /^I convert features to FitNesse$/ do
+  in_test_dir do
+    @converter = Cukable::Converter.new
+    @converter.features_to_fitnesse('features', 'FitNesseRoot')
+  end
+end
+
+
