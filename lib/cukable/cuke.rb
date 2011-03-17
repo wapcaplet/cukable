@@ -187,6 +187,7 @@ module Cukable
       got_feature = false
       got_scenario = false
 
+      FileUtils.mkdir(@features_dir) unless File.directory?(@features_dir)
       file = File.open(feature_filename, 'w')
 
       # Error if there is not exactly one "Feature" row

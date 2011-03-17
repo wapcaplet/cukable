@@ -17,7 +17,10 @@ namespace :rcov do
 
   desc "Run Cucumber and generate coverage report"
   Cucumber::Rake::Task.new(:cucumber) do |t|
-    t.cucumber_opts = "--format pretty"
+    t.cucumber_opts = [
+      "--format pretty",
+      "--tags ~@wip",
+    ]
     t.rcov = true
     t.rcov_opts = [
       '--exclude /.gem/,/gems/,spec,features',

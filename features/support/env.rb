@@ -6,8 +6,8 @@ require 'tempfile'
 
 class CukableHelper
   def initialize
-    FileUtils.rm_rf test_dir
-    FileUtils.mkdir_p test_dir
+    remove_test_dir
+    create_test_dir
   end
 
 
@@ -25,11 +25,39 @@ class CukableHelper
   # Create a standard cucumber features/ directory in `test_dir`
   def create_standard_cucumber_dir
     in_test_dir do
-      FileUtils.rm_rf 'features' if File.directory?('features')
       FileUtils.mkdir_p 'features/support'
       FileUtils.mkdir 'features/step_definitions'
       create_env_rb
       create_stepdefs
+    end
+  end
+
+
+  def create_standard_fitnesse_dir
+    in_test_dir do
+      FileUtils.mkdir_p 'FitNesseRoot'
+    end
+  end
+
+
+  def create_test_dir
+    FileUtils.mkdir_p test_dir
+  end
+
+
+  def remove_test_dir
+    FileUtils.rm_rf test_dir
+  end
+
+
+  def create_fitnesse_page(page_name, content)
+    in_test_dir do
+      page_dir = File.join('FitNesseRoot', page_name)
+      page_file = File.join(page_dir, 'content.txt')
+      FileUtils.mkdir_p page_dir
+      File.open(page_file, 'w') do |file|
+        file.puts(content)
+      end
     end
   end
 
@@ -97,9 +125,40 @@ class CukableHelper
     puts @last_stderr
   end
 
+
+  # Ensure that the given file contains exactly the given text
+  # (extra newlines/whitespace at beginning or end don't count)
+  def file_should_contain(filename, text)
+    in_test_dir do
+      IO.read(filename).strip.should == text.strip
+    end
+  end
+
+
+  # Ensure that the given filename contains JSON text.
+  #
+  # JSON does not need to match exactly; the output of each line
+  # should *start* with the expected JSON text, but could contain
+  # additional stuff afterwards.
+  def file_should_contain_json(filename, json_text)
+    in_test_dir do
+      got_json = JSON.load(File.open(filename))
+      want_json = JSON.parse(json_text)
+
+      got_json.zip(want_json).each do |got_row, want_row|
+        got_row.zip(want_row).each do |got, want|
+          got.should =~ /^#{want}/
+        end
+      end
+    end
+  end
 end
 
 World do
   CukableHelper.new
+end
+
+After do
+  #remove_test_dir
 end
 

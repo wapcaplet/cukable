@@ -1,3 +1,6 @@
+# Steps for Cukable self-tests
+# NOTE: Helper methods are defined in features/support/env.rb
+
 require 'json'
 require 'cukable/cuke'
 
@@ -7,81 +10,59 @@ Given /^a standard Cucumber project directory structure$/ do
 end
 
 
+Given /^a FitNesse wiki$/ do
+  create_standard_fitnesse_dir
+end
+
+
+Given /^a FitNesse suite "(.+)" with:$/ do |page_name, content|
+  create_fitnesse_page(page_name, content)
+end
+
+
+Given /^a FitNesse test "(.+)" with:$/ do |page_name, content|
+  create_fitnesse_page(page_name, content)
+end
+
+
 Given /^a file named "(.+)" with:$/ do |filename, content|
   create_file(filename, content)
 end
 
 
 When /^I run cucumber on "(.+)"$/ do |feature_files|
-  format = "--format Cucumber::Formatter::SlimJSON --out slim"
+  format = "--format Cucumber::Formatter::SlimJSON --out slim_results"
   run_cucumber("#{format} #{feature_files}")
 end
 
 
 Then /^"(.+)" should contain:$/ do |filename, text|
-  in_test_dir do
-    IO.read(filename).should == text
-  end
+  file_should_contain(filename, text)
 end
 
 
 Then /^"(.+)" should contain JSON:$/ do |filename, json_text|
-  in_test_dir do
-    got_json = JSON.load(File.open(filename))
-    want_json = JSON.parse(json_text)
-
-    # JSON does not need to match exactly; the output of each line
-    # should *start* with the expected JSON text, but could contain
-    # additional stuff afterwards.
-    got_json.zip(want_json).each do |got_row, want_row|
-      got_row.zip(want_row).each do |got, want|
-        got.should =~ /^#{want}/
-      end
-    end
-  end
+  file_should_contain_json(filename, json_text)
 end
 
 
 Given /^a Cuke fixture$/ do
-  @cuke = Cukable::Cuke.new
+  in_test_dir do
+    @cuke = Cukable::Cuke.new
+  end
 end
 
 
 When /^I do this table:$/ do |table|
-  @cuke.do_table(table.raw)
-  @cuke.accelerate("foo")
-end
-
-
-# Simple steps
-# TODO: Move these to a separate file, and copy it over to create the standard
-# cucumber directory structure for use by the embedded tests
-Given /^a step passes$/ do
-  true.should == true
-end
-
-Given /^a step fails$/ do
-  true.should == false
-end
-
-Given /^a step is skipped$/ do
-  true.should == true
-end
-
-Given /^a table:$/ do |table|
-  table.raw.each do |row|
-    #row.each do |cell|
-      #cell.should == 'OK'
-    #end
+  in_test_dir do
+    @cuke.do_table(table.raw)
   end
 end
 
-When /^I fill in:$/ do |table|
-  table.rows_hash.each do |name, value|
-    When %{I fill in "#{name}" with "#{value}"}
+
+When /^I write features for suite "(.+)"$/ do |suite_name|
+  in_test_dir do
+    @cuke.write_suite_features("FitNesseRoot/#{suite_name}")
   end
 end
 
-When /^I fill in "(.+)" with "(.+)"$/ do |field, value|
-  value.should == 'OK'
-end

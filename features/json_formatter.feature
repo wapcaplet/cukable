@@ -1,3 +1,4 @@
+@wip
 Feature: Slim JSON Formatter
 
   Background:
@@ -12,7 +13,7 @@ Feature: Slim JSON Formatter
           Given a step passes
       """
     When I run cucumber on "features/passing.feature"
-    Then "slim/features/passing.feature.json" should contain JSON:
+    Then "slim_results/features/passing.feature.json" should contain JSON:
       """
         [
           ["report:Feature: Passing"],
@@ -30,7 +31,7 @@ Feature: Slim JSON Formatter
           Given a step fails
       """
     When I run cucumber on "features/failing.feature"
-    Then "slim/features/failing.feature.json" should contain JSON:
+    Then "slim_results/features/failing.feature.json" should contain JSON:
       """
         [
           ["report:Feature: Failing"],
@@ -48,7 +49,7 @@ Feature: Slim JSON Formatter
           Given a step is undefined
       """
     When I run cucumber on "features/undefined.feature"
-    Then "slim/features/undefined.feature.json" should contain JSON:
+    Then "slim_results/features/undefined.feature.json" should contain JSON:
       """
         [
           ["report:Feature: Undefined"],
@@ -67,7 +68,7 @@ Feature: Slim JSON Formatter
           Then a step is skipped
       """
     When I run cucumber on "features/skipped.feature"
-    Then "slim/features/skipped.feature.json" should contain JSON:
+    Then "slim_results/features/skipped.feature.json" should contain JSON:
       """
         [
           ["report:Feature: Skipped"],
@@ -88,7 +89,7 @@ Feature: Slim JSON Formatter
             | OK | OK | OK |
       """
     When I run cucumber on "features/passing_table.feature"
-    Then "slim/features/passing_table.feature.json" should contain JSON:
+    Then "slim_results/features/passing_table.feature.json" should contain JSON:
       """
         [
           ["report:Feature: Passing table"],
@@ -110,7 +111,7 @@ Feature: Slim JSON Formatter
             | OK | FAIL | OK |
       """
     When I run cucumber on "features/failing_table.feature"
-    Then "slim/features/failing_table.feature.json" should contain JSON:
+    Then "slim_results/features/failing_table.feature.json" should contain JSON:
       # FIXME: The table rows should probably not be marked 'pass' here!
       """
         [
@@ -136,7 +137,7 @@ Feature: Slim JSON Formatter
             | fails |
       """
     When I run cucumber on "features/scenario_outline.feature"
-    Then "slim/features/scenario_outline.feature.json" should contain JSON:
+    Then "slim_results/features/scenario_outline.feature.json" should contain JSON:
       """
         [
           ["report:Feature: Failing table"],
