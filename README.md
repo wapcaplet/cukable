@@ -6,7 +6,7 @@ from [FitNesse](http://fitnesse.org).
 
 It consists of a [rubyslim](http://github.com/unclebob/rubyslim) fixture that
 invokes Cucumber, and a custom Cucumber output formatter that returns
-SliM-formatted lists.
+SliM-formatted test results to FitNesse.
 
 
 Supported syntax
@@ -16,9 +16,10 @@ Most of the standard Cucumber/Gherkin syntax is supported by Cukable, including:
 
 - Background sections
 - Scenarios and Scenario Outlines with Examples
+- Multiple scenarios per feature
 - Multi-line table arguments and table diffing
 - Multi-line strings
-- Tags, including `@selenium`
+- Tags (though tag support could be better)
 
 
 Converting existing features
@@ -39,6 +40,49 @@ wiki page you want to import them to is in `FitNesseRoot/MyTests`, do:
 
 The hierarchy of your `features/` folder will be preserved as a hierarchy of
 FitNesse wiki pages. Each `.feature` file becomes a separate wiki page.
+
+
+Writing new features
+--------------------
+
+You can write new Cucumber features from scratch, directly in FitNesse, and run
+them from FitNesse with only minimal configuration.
+
+Here's what a simple hierarchy might look like:
+
+- FitNesseRoot
+  - CukableTests (suite)
+    - SetUp
+    - FeedKitty (test)
+    - CleanLitterbox (test)
+
+Put these variable definitions in `CukableTests`:
+
+    !define TEST_SYSTEM {slim}
+    !define TEST_RUNNER {rubyslim}
+    !define COMMAND_PATTERN {rubyslim}
+
+This is the essential configuration to tell FitNesse how to invoke `rubyslim`
+for tests in the suite. Then put this in `CukableTests.SetUp`:
+
+    !| import |
+    | Cukable |
+
+This tells `rubyslim` to load the `Cukable` module, so it'll know how to run
+tests in `Cuke` tables. Now create a `Cuke` table in `CukableTests.FeedKitty`:
+
+    | Table: Cuke                        |
+    | Feature: Feed kitty                |
+    |   Scenario: Canned food            |
+    |     Given I have a can of cat food |
+    |     When I feed it to my cat       |
+    |     Then the cat should purr       |
+
+Note that all your steps must be defined in the usual way, such as `.rb` files
+in `features/step_definitions`. That's outside Cukable's scope.
+
+Finally, you can run the `FeedKitty` test by itself, or run the entire
+`CukableTests` suite.
 
 
 Test syntax
@@ -162,27 +206,31 @@ overhead to run a suite of tests in this way.
 Cukable provides a workaround to this in the form of something called `AaaAccelerator`.
 If you have a suite of three features:
 
-- MyFeatures
-    - FirstFeature
-    - SecondFeature
-    - ThirdFeature
+- MyFeatures (suite)
+    - FirstFeature (test)
+    - SecondFeature (test)
+    - ThirdFeature (test)
 
 and you want to be able to run the entire suite without invoking a separate
 Cucumber instance each time, simply create a new child page of `MyFeatures` called
 `AaaAccelerator` (named this way so it will be executed first in the suite):
 
-- MyFeatures
-    - AaaAccelerator
-    - FirstFeature
-    - SecondFeature
-    - ThirdFeature
+- MyFeatures (suite)
+    - AaaAccelerator (test)
+    - FirstFeature (test)
+    - SecondFeature (test)
+    - ThirdFeature (test)
 
 The new page does not need to have any content; you can leave it empty if you
 like. Its existence alone will cause acceleration to take effect for the suite
 that it's in.
 
+You can nest suites inside each other, and each suite can have its own
+accelerator page. Whenever you execute a suite, the highest-level accelerator
+will be executed (thus running as many features as possible together).
 
-Caveats
+
+Gotchas
 -------
 
 Because FitNesse interprets certain text as a form of markup, you should be
@@ -197,13 +245,6 @@ being interpreted by FitNesse:
     | And my email address is "!-test@example.com-!" |
 
 
-TODO
-----
-
-- Need more spec tests (full statement coverage before release would be nice)
-- Find a good way to pass arguments to Cucumber (to enable/disable @selenium,
-  run with a certain profile, output a coverage report etc.)
-- Mark individual table cell failures, instead of failing the whole row
 
 
 Copyright
