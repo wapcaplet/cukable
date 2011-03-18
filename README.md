@@ -19,7 +19,7 @@ Most of the standard Cucumber/Gherkin syntax is supported by Cukable, including:
 - Multiple scenarios per feature
 - Multi-line table arguments and table diffing
 - Multi-line strings
-- Tags (though tag support could be better)
+- Tags for running/skipping scenarios and defining drivers (such as `@selenium`)
 
 
 Converting existing features
@@ -184,10 +184,10 @@ the table:
     |   Scenario: Tagged scenario |
     |     When I have some tags   |
 
-At the moment, tags are not terribly useful (since Cukable provides no facility
-for running scenarios based on which tags they have), though they do still apply
-for any tag-related behavior such as changing the driver to be used (`@selenium`,
-`@javascript` etc.).
+The inclusion of tags is useful for defining which driver to use (for example
+the `@selenium` tag supported by Capybara), as well as for controlling which
+tests are run via the `CUCUMBER_ARGS` variable supported by the accelerator,
+described below.
 
 
 Acceleration
@@ -230,6 +230,27 @@ accelerator page. Whenever you execute a suite, the highest-level accelerator
 will be executed (thus running as many features as possible together).
 
 
+Cucumber args
+-------------
+
+Whenever you run a suite with an `AaaAccelerator` page, you can define
+additional command-line arguments to pass to Cucumber by using the
+`CUCUMBER_ARGS` variable. This is most useful for specifying the `--tags`
+argument to control which tests are executed or skipped. Simply define the
+variable like this:
+
+    !define CUCUMBER_ARGS {--tags @run_me}
+
+Put this at the top of any suite page, and any `AaaAccelerator` in that suite
+will pass those additional arguments to Cucumber. When tags are passed that
+prevent certain scenarios in a feature to be skipped, those skipped scenarios
+will be colored grey (ignored).
+
+At present the `CUCUMBER_ARGS` variable only takes effect when an
+`AaaAccelerator` page is called, and there is no way to pass additional
+arguments to individual tests.
+
+
 Gotchas
 -------
 
@@ -244,7 +265,11 @@ being interpreted by FitNesse:
     | When I have a !-CamelCase-! word |
     | And my email address is "!-test@example.com-!" |
 
+Or, you can simply put a `!` at the beginning of the first row of your table,
+like this:
 
+    !| Table: Cuke |
+    | CamelCase and email@addr.ess.es are no problem here |
 
 
 Copyright
