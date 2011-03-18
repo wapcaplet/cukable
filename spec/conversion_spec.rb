@@ -12,7 +12,7 @@ describe Cukable::Conversion do
         '    And I fill in "Password" with "foobar"',
       ]
       fitnesse = [
-        '| Table: Cuke |',
+        '!| Table: Cuke |',
         '| Feature: User account |',
         '| Scenario: Login |',
         '| When I am on the login page |',
@@ -36,7 +36,7 @@ describe Cukable::Conversion do
         'As a user with an account',
         'I want to login to the website',
         '',
-        '| Table: Cuke |',
+        '!| Table: Cuke |',
         '| Feature: User account |',
         '| Scenario: Login |',
         '| When I am on the login page |',
@@ -58,7 +58,7 @@ describe Cukable::Conversion do
         '    When I am on the login page',
       ]
       fitnesse = [
-        '| Table: Cuke |',
+        '!| Table: Cuke |',
         '| Feature: User account |',
         '| Background: |',
         '| Given a user exists: |',
@@ -85,7 +85,7 @@ describe Cukable::Conversion do
         '      | office | Get to work |',
       ]
       fitnesse = [
-        '| Table: Cuke |',
+        '!| Table: Cuke |',
         '| Feature: Scenario outlines |',
         '| Scenario: Different pages |',
         '| When I am on the <page> page |',
@@ -110,7 +110,7 @@ describe Cukable::Conversion do
         '      """',
       ]
       fitnesse = [
-        '| Table: Cuke |',
+        '!| Table: Cuke |',
         '| Feature: Strings |',
         '| Scenario: Multi-line string |',
         '| Given a multi-line string: |',
@@ -132,7 +132,7 @@ describe Cukable::Conversion do
         '    Given a scenario',
       ]
       fitnesse = [
-        '| Table: Cuke |',
+        '!| Table: Cuke |',
         '| @tag_a |',
         '| @tag_b |',
         '| Feature: Tags |',
@@ -150,14 +150,14 @@ describe Cukable::Conversion do
   context "#fitnesse_to_features" do
     it "returns one table for each feature" do
       fitnesse = [
-        '| Table: Cuke |',
+        '!| Table: Cuke |',
         '| Feature: First |',
         '| Scenario: Scenario 1A |',
         '| Given a scenario |',
         '| Scenario: Scenario 1B |',
         '| Given a scenario |',
         '',
-        '| Table: Cuke |',
+        '!| Table: Cuke |',
         '| Feature: Second |',
         '| Scenario: Scenario 2A |',
         '| Given a scenario |',
@@ -185,7 +185,7 @@ describe Cukable::Conversion do
 
     it "correctly interprets tables" do
       fitnesse = [
-        '| Table: Cuke |',
+        '!| Table: Cuke |',
         '| Feature: Tables |',
         '| Scenario: Table rows |',
         '| Given a table: |',
@@ -209,7 +209,7 @@ describe Cukable::Conversion do
 
     it "correctly escapes brackets in Scenario Outlines" do
       fitnesse = [
-        '| Table: Cuke |',
+        '!| Table: Cuke |',
         '| Feature: Scenario Outlines |',
         '| Scenario Outline: With tables |',
         '| Given a user: |',
@@ -240,7 +240,7 @@ describe Cukable::Conversion do
     it "ignores non-table lines" do
       fitnesse = [
         'This text should be ignored',
-        '| Table: Cuke |',
+        '!| Table: Cuke |',
         '| Feature: Extra text |',
         '| Scenario: Ignore extra text|',
         '| Given a scenario |',

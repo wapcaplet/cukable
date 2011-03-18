@@ -17,7 +17,7 @@ Feature: Cuke fixture
       ]
       """
 
-  Scenario: Wiki
+  Scenario: Write features
     Given a Cuke fixture
     And a FitNesse wiki
     And a FitNesse suite "TestSuite" with:
@@ -47,5 +47,43 @@ Feature: Cuke fixture
       """
       Feature: Goodbye
       Scenario: Goodbye
+      """
+
+
+  @focus
+  Scenario: Accelerate suite
+    Given a FitNesse wiki
+    And a Cuke fixture
+    And a file named "features/passing.feature" with:
+      """
+      Feature: Passing
+        Scenario: Passing
+          Given a step passes
+      """
+    And a file named "features/failing.feature" with:
+      """
+      Feature: Failing
+        Scenario: Failing
+          Given a step fails
+      """
+    When I convert features to FitNesse
+    And I run the accelerator for suite "FeatureS"
+
+    Then "slim_results/features/fitnesse/PassingFeature_0.feature.json" should contain JSON:
+      """
+      [
+        ["report:Feature: Passing"],
+        ["report:Scenario: Passing"],
+        ["error:Given a step passes"]
+      ]
+      """
+
+    And "slim_results/features/fitnesse/FailingFeature_0.feature.json" should contain JSON:
+      """
+      [
+        ["report:Feature: Failing"],
+        ["report:Scenario: Failing"],
+        ["error:Given a step fails"]
+      ]
       """
 

@@ -1,4 +1,3 @@
-@focus
 Feature: Conversion
 
   Background:
@@ -22,7 +21,7 @@ Feature: Conversion
 
     Then "FitNesseRoot/FeatureS/PassingFeature/content.txt" should contain:
       """
-      | Table: Cuke |
+      !| Table: Cuke |
       | Feature: Passing |
       | Scenario: Passing |
       | Given a step passes |
@@ -46,7 +45,7 @@ Feature: Conversion
 
     And "FitNesseRoot/FeatureS/FailingFeature/content.txt" should contain:
       """
-      | Table: Cuke |
+      !| Table: Cuke |
       | Feature: Failing |
       | Scenario: Failing |
       | Given a step fails |
@@ -70,9 +69,13 @@ Feature: Conversion
 
     And "FitNesseRoot/FeatureS/content.txt" should contain:
       """
+      These variables must be defined for rubyslim to work:
       !define TEST_SYSTEM {slim}
       !define TEST_RUNNER {rubyslim}
       !define COMMAND_PATTERN {rubyslim}
+
+      Extra command-line arguments to pass to Cucumber:
+      !define CUCUMBER_ARGS {}
 
       !contents -R9 -p -f -h
       """

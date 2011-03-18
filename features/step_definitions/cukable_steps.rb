@@ -75,3 +75,9 @@ When /^I convert features to FitNesse$/ do
 end
 
 
+When /^I run the accelerator for suite "(.+)"$/ do |suite_name|
+  in_test_dir do
+    @cuke.accelerate("#{suite_name}.AaaAccelerator")
+  end
+end
+

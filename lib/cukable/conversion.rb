@@ -22,14 +22,13 @@ module Cukable
       # Unparsed text (between 'Feature:' line and the first Background/Scenario)
       unparsed = []
       # Table (all Background, Scenario, and Scenario Outlines with steps
-      table = []
-      table << "| Table: Cuke |"
+      table = ["!| Table: Cuke |"]
 
       # Are we in the unparsed-text section of the .feature file?
       in_unparsed = false
 
       feature.each do |line|
-        line = literalize(line)
+        line.strip!
 
         # The Feature: line starts the table, and also starts the unparsed
         # section of the feature file
@@ -265,9 +264,13 @@ module Cukable
     def create_feature_root(fitnesse_path)
       FileUtils.mkdir_p(fitnesse_path)
       content = [
+        'These variables must be defined for rubyslim to work:',
         '!define TEST_SYSTEM {slim}',
         '!define TEST_RUNNER {rubyslim}',
         '!define COMMAND_PATTERN {rubyslim}',
+        '',
+        'Extra command-line arguments to pass to Cucumber:',
+        '!define CUCUMBER_ARGS {}',
         '',
         '!contents -R9 -p -f -h',
       ].join("\n")
@@ -284,7 +287,7 @@ module Cukable
         '| Cukable |',
         '',
         '| script | Cuke |',
-        '| accelerate | ${PAGE_PATH}.${PAGE_NAME} |',
+        '| accelerate; | ${PAGE_PATH}.${PAGE_NAME} | ${CUCUMBER_ARGS} |',
       ].join("\n")
       create_wiki_page(setup_path, content)
     end

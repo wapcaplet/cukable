@@ -15,6 +15,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..')
 
 require 'json'
 require 'fileutils'
+require 'diff/lcs/array'
 
 require 'cukable/helper'
 require 'cukable/conversion'
@@ -36,6 +37,7 @@ module Cukable
     @@output_files = Hash.new
     @@lastSuiteName = nil
 
+
     def initialize
       # Directory where temporary .feature files will be written
       @features_dir = File.join('features', 'fitnesse')
@@ -50,8 +52,6 @@ module Cukable
       # Remove wiki cruft from the test_path
       test_name = remove_cruft(test_name)
       @cucumber_args = cucumber_args
-      #puts "(DEBUG) accelerate(#{test_name})"
-      #puts "(DEBUG) @@output_files: #{@@output_files.inspect}"
 
       # Don't run the accelerator unless we're on a page called AaaAccelerator
       if !(test_name =~ /^.*AaaAccelerator$/)
@@ -67,10 +67,8 @@ module Cukable
       # with "RubySlim.HelloWorld". But RubySlim.NewTest does not start with
       # "RubySlim.HelloWorld".
       if @@lastSuiteName != nil && suite_path =~ /^#{@@lastSuiteName}/
-        #puts "(DEBUG) Already ran accelerator #{suite_path} as part of #{@@lastSuiteName}"
         return true
       else
-        #puts "(DEBUG) First time running suite: #{suite_path}"
         @@lastSuiteName = suite_path
       end
 
@@ -120,16 +118,11 @@ module Cukable
           rescue FormatError => err
             puts "!!!! Error writing #{feature_filename}:"
             puts err.message
-            puts err.backtrace.inspect
+            puts err.backtrace[0..5].join("\n")
             puts ".... Continuing anyway."
           end
 
           # Store the JSON filename in the digest hash
-          #puts "(DEBUG) In write_suite_features"
-          #puts "(DEBUG) Table is:"
-          #table.each do |row|
-            #puts row.inspect
-          #end
           digest = table_digest(table)
           json_filename = File.join(@output_dir, "#{feature_filename}.json")
           @@output_files[digest] = json_filename
@@ -142,23 +135,14 @@ module Cukable
     # Process the given Cucumber table, containing one step per line
     # Table Table fixture method call.
     def do_table(table)
-      #puts "(DEBUG) In do_table"
-      #puts "(DEBUG) @@output_files: #{@@output_files.inspect}"
-      #puts "(DEBUG) Table is:"
-      #table.each do |row|
-        #puts row.inspect
-      #end
-
       # If the digest of this table already exists in @output files,
       # simply return the results that were already generated.
       existing = @@output_files[table_digest(table)]
       if existing
-        #puts "(DEBUG) Existing results"
         results = existing
       # Otherwise, run Cucumber from scratch on this table,
       # and return the results
       else
-        #puts "(DEBUG) NO Existing results"
         # FIXME: Move this to a separate method?
         # Create @features_dir if it doesn't exist
         FileUtils.mkdir(@features_dir) unless File.directory?(@features_dir)
@@ -169,9 +153,12 @@ module Cukable
         results = File.join(@output_dir, "#{feature_filename}.json")
       end
 
-      # If the results file exists, parse it and return the results
+      # If the results file exists, parse it, merge with the original table,
+      # and return the results
       if File.exist?(results)
-        return JSON.load(File.open(results))
+        json = JSON.load(File.open(results))
+        merged = merge_table_with_results(table, json)
+        return merged
       # Otherwise, return an 'ignore' for all rows/cells in the table
       else
         return table.collect { |row| row.collect { |cell| 'ignore' } }
@@ -179,10 +166,51 @@ module Cukable
     end
 
 
+    # Merge the original input table with the actual results, and
+    # return a new table that puts the results section in the correct place,
+    # with all other original rows marked as skipped.
+    def merge_table_with_results(input_table, json_results)
+      final_results = []
+      def clean_cell(cell)
+        return cell.gsub(
+          /^[^:]*:(.*)$/, '\1'
+        ).gsub(
+          /<b>(.*)<\/b>/, '\1'
+        ).gsub(
+          /<br\/>/, ''
+        ).gsub(
+          /\(Undefined Step\)/, ''
+        ).gsub(
+          /<span[^>]*>.*<\/span>/, ''
+        ).strip
+      end
+      # Strip extra stuff from the results to get the original line
+      clean_results = json_results.collect do |row|
+        row.collect do |cell|
+          clean_cell(cell)
+        end
+      end
+      # Perform a context-diff
+      input_table.sdiff(clean_results).each do |diff|
+        # If this row was in the input table, but not in the results,
+        # output it as an ignored row
+        if diff.action == '-'
+          final_results << input_table[diff.old_position].collect do |cell|
+            "ignore:#{cell}"
+          end
+        elsif diff.action == '='
+          final_results << json_results[diff.new_position]
+        elsif diff.action == '+'
+          final_results << json_results[diff.new_position]
+        end
+      end
+      return final_results
+    end
+
+
     # Write a Cucumber .feature file containing the lines of Gherkin text
     # found in `table`, where `table` is an array of arrays of strings.
     def write_feature(table, feature_filename)
-      #puts "(DEBUG) Writing '#{feature_filename}'"
       # Have 'Feature:' or 'Scenario:' been found in the input?
       got_feature = false
       got_scenario = false
@@ -223,13 +251,13 @@ module Cukable
     # Run cucumber on `feature_filenames`, and output
     # results in FitNesse table format to `output_dir`.
     def run_cucumber(feature_filenames, output_dir)
-      #puts "(DEBUG) Running cucumber on #{feature_filenames.inspect}"
       req = "--require /home/eric/git/cukable/lib/"
       format = "--format Cucumber::Formatter::SlimJSON"
       output = "--out #{output_dir}"
       args = @cucumber_args
       features = feature_filenames.join(" ")
 
+      #puts "cucumber #{req} #{format} #{output} #{args} #{features}"
       system "cucumber #{req} #{format} #{output} #{args} #{features}"
 
       # TODO: Ensure that the correct number of output files were written
