@@ -38,12 +38,13 @@ module Cukable
     @@lastSuiteName = nil
 
 
-    def initialize
+    def initialize(cucumber_args='')
       # Directory where temporary .feature files will be written
       @features_dir = File.join('features', 'fitnesse')
       # Directory where JSON output files will be written by Cucumber
       @output_dir = 'slim_results'
-      @cucumber_args = ''
+      # Cucumber command-line arguments
+      @cucumber_args = cucumber_args
     end
 
 

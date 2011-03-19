@@ -190,8 +190,7 @@ the table:
 
 The inclusion of tags is useful for defining which driver to use (for example
 the `@selenium` tag supported by Capybara), as well as for controlling which
-tests are run via the `CUCUMBER_ARGS` variable supported by the accelerator,
-described below.
+tests are run via cucumber command-line arguments, described below.
 
 
 Acceleration
@@ -238,23 +237,28 @@ together).
 Cucumber args
 -------------
 
-Whenever you run a suite with an `AaaAccelerator` page, you can define
-additional command-line arguments to pass to Cucumber by using the
-`CUCUMBER_ARGS` variable. This is most useful for specifying the `--tags`
-argument to control which tests are executed or skipped. Simply define the
-variable like this:
+There are two ways to pass command-line arguments to Cucumber when running
+features. The first is by passing an argument directly to the `Cuke`
+constructor in a feature table; just include an extra cell in the first row:
+
+    !| Table: Cuke | --tags @run_me    |
+    | Feature: Arguments               |
+    |   @run_me                        |
+    |   Scenario: This will be run     |
+    |   @dont_run_me                   |
+    |   Scenario: This will be skipped |
+
+This is the approach you'd use if you wanted to run a single test with
+specific command-line arguments. If you want to run an entire suite using
+the `AaaAccelerator` technique described above, you can define command-line
+arguments as a FitNesse variable, like this:
 
     !define CUCUMBER_ARGS {--tags @run_me}
 
 Put this at the top of any suite page, and any `AaaAccelerator` in that suite
-will pass those additional arguments to Cucumber. When tags are passed that
-prevent certain scenarios in a feature to be skipped, those skipped scenarios
-will be colored grey (ignored).
-
-At present the `CUCUMBER_ARGS` variable only takes effect when an
-`AaaAccelerator` page is called, and there is no way to pass additional
-arguments to individual tests.
-
+will pass those additional arguments to Cucumber. Note that these will override
+any arguments passed to individual tables, because Cucumber is only executed
+once for the entire suite.
 
 
 Copyright

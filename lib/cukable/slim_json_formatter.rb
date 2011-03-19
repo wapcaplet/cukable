@@ -163,10 +163,15 @@ module Cucumber
 
         # For any other row, append to multiline normally
         else
-          @multiline << ["report: "] + @table_row
-          # FIXME: This may not work (could add too many rows)
+          # If an exception occurred in a table row, put the exception
+          # message in the first cell (which is normally empty). This
+          # allows us to show the exception without adding extra rows
+          # (which messes up the original table's formatting)
           if table_row.exception
-            @multiline << ["fail:#{backtrace(table_row.exception)}"]
+            @multiline << ["fail:#{backtrace(table_row.exception)}"] + @table_row
+          # Otherwise, output an empty report: cell in the first column
+          else
+            @multiline << ["report: "] + @table_row
           end
         end
 
