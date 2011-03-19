@@ -144,11 +144,10 @@ module Cukable
       # FIXME: This may not be terribly efficient...
       # strip first to get a copy of the string
       result = string.strip
-      result.gsub!(/^[^:]*:(.*)$/, '\1')
-      result.gsub!(/<b>(.*)<\/b>/, '\1')
-      result.gsub!(/<br\/?>.*/, '')
-      result.gsub!(/\(Undefined Step\)/, '')
-      result.gsub!(/<span[^>]*>.*<\/span>/, '')
+      result.gsub!(/^[^:]*:(.*)$/, '\1')        # status indicator
+      result.gsub!(/<b>|<\/b>|<br\/?>/, '')     # all bold tags and line-breaks
+      result.gsub!(/<span[^>]*>.*<\/span>/, '') # spans and their content
+      result.gsub!(/\(Undefined Step\)/, '')    # (Undefined Step)
       return result.strip
     end
   end

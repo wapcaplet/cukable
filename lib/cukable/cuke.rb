@@ -182,12 +182,12 @@ module Cukable
         # If this row was in the input table, but not in the results,
         # output it as an ignored row
         if diff.action == '-'
+          # Ignore all cells in the row
           final_results << input_table[diff.old_position].collect do |cell|
             "ignore:#{cell}"
           end
-        elsif diff.action == '='
-          final_results << json_results[diff.new_position]
-        elsif diff.action == '+'
+        # In all other cases, output the row from json_results
+        else # '=', '+', '!'
           final_results << json_results[diff.new_position]
         end
       end
