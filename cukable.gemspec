@@ -5,7 +5,7 @@ Gem::Specification.new do |s|
   s.description = <<-EOS
     Cukable allows running Cucumber test scenarios from FitNesse
   EOS
-  s.authors = ["Eric Pierce"]
+  s.authors = ["Eric Pierce", "Ken Brazier"]
   s.email = "wapcaplet88@gmail.com"
   s.homepage = "http://github.com/wapcaplet/cukable"
   s.platform = Gem::Platform::RUBY

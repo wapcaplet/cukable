@@ -225,13 +225,14 @@ Cucumber instance each time, simply create a new child page of `MyFeatures` call
     - SecondFeature (test)
     - ThirdFeature (test)
 
-The new page does not need to have any content; you can leave it empty if you
-like. Its existence alone will cause acceleration to take effect for the suite
-that it's in.
+The `AaaAccelerator` page does not need to have any content; you can leave it
+empty if you like. Its existence alone will cause acceleration to take effect
+for the suite that it's in.
 
 You can nest suites inside each other, and each suite can have its own
-accelerator page. Whenever you execute a suite, the highest-level accelerator
-will be executed (thus running as many features as possible together).
+`AaaAccelerator` page. Whenever you execute a suite, the highest-level
+accelerator will be executed (thus running as many features as possible
+together).
 
 
 Cucumber args
