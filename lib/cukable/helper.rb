@@ -144,8 +144,10 @@ module Cukable
       # FIXME: This may not be terribly efficient...
       # strip first to get a copy of the string
       result = string.strip
+      # Remove extra stuff added by JSON formatter
       result.gsub!(/^[^:]*:(.*)$/, '\1')        # status indicator
-      result.gsub!(/<b>|<\/b>|<br\/?>/, '')     # all bold tags and line-breaks
+      result.gsub!(/<b>|<\/b>/, '')             # all bold tags
+      result.gsub!(/<br\/?>.*/, '')             # <br> and anything that follows
       result.gsub!(/<span[^>]*>.*<\/span>/, '') # spans and their content
       result.gsub!(/\(Undefined Step\)/, '')    # (Undefined Step)
       return result.strip
