@@ -71,15 +71,19 @@ for tests in the suite. Then put this in `CukableTests.SetUp`:
 This tells `rubyslim` to load the `Cukable` module, so it'll know how to run
 tests in `Cuke` tables. Now create a `Cuke` table in `CukableTests.FeedKitty`:
 
-    | Table: Cuke                        |
+    !| Table: Cuke                       |
     | Feature: Feed kitty                |
     |   Scenario: Canned food            |
     |     Given I have a can of cat food |
     |     When I feed it to my cat       |
     |     Then the cat should purr       |
 
-Note that all your steps must be defined in the usual way, such as `.rb` files
-in `features/step_definitions`. That's outside Cukable's scope.
+The `!` that precedes the table ensures that all text within will be treated
+literally, and will not be marked up as FitNesse wiki-text. This is especially
+important if you have CamelCase words, email addresses, or URLs in your table.
+
+Also, note that all your steps must be defined in the usual way, such as `.rb`
+files in `features/step_definitions`. That's outside Cukable's scope.
 
 Finally, you can run the `FeedKitty` test by itself, or run the entire
 `CukableTests` suite.
@@ -107,7 +111,7 @@ If this is your `.feature` file:
 
 Then here is what your FitNesse wikitext would be:
 
-    | Table: Cuke                         |
+    !| Table: Cuke                         |
     | Feature: Hello                      |
     |   Scenario: Hello world             |
     |     Given I am on the hello page    |
@@ -136,7 +140,7 @@ Cucumber supports multiline step arguments in the form of tables; in a
 
 In a FitNesse wiki page, this would translate to:
 
-    | Table: Cuke                                    |
+    !| Table: Cuke                                    |
     | Feature: Tables                                |
     |   Scenario: Fill in fields                     |
     |     Given I am on the contact page             |
@@ -250,26 +254,6 @@ At present the `CUCUMBER_ARGS` variable only takes effect when an
 `AaaAccelerator` page is called, and there is no way to pass additional
 arguments to individual tests.
 
-
-Gotchas
--------
-
-Because FitNesse interprets certain text as a form of markup, you should be
-careful of any syntactical constructs that would get marked up by FitNesse.
-Two important things to look out for are CamelCase and email addresses, since
-FitNesse will add links to these (which will confuse Cucumber).
-
-To avoid this problem, use literal markers `!-...-!' to prevent a string from
-being interpreted by FitNesse:
-
-    | When I have a !-CamelCase-! word |
-    | And my email address is "!-test@example.com-!" |
-
-Or, you can simply put a `!` at the beginning of the first row of your table,
-like this:
-
-    !| Table: Cuke |
-    | CamelCase and email@addr.ess.es are no problem here |
 
 
 Copyright
