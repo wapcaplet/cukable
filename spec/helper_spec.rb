@@ -118,7 +118,7 @@ describe Cukable::Helper do
       expect = 'See SomePage'
       remove_cruft(string).should == expect
     end
-  end
+  end # remove_cruft
 
 
   context "#table_digest" do
@@ -148,6 +148,22 @@ describe Cukable::Helper do
         ["Lancelot", "Holy Grail"],
       ]
       table_digest(table1).should_not == table_digest(table2)
+    end
+  end # table_digest
+
+  context "#clean_cell" do
+    it "strips all markup added by the SlimJSON formatter" do
+      clean_cell("report:Feature: Some feature").should == "Feature: Some feature"
+      clean_cell("report:Scenario: A scenario").should == "Scenario: A scenario"
+      clean_cell("ignore:@some_tag").should == "@some_tag"
+      clean_cell("pass:Given a passing step").should == "Given a passing step"
+      clean_cell("pass:Given some <b>bold text</b>").should == "Given some bold text"
+      clean_cell("pass:Given some <b>bold text</b>").should == "Given some bold text"
+      clean_cell("fail:When failing step <br>With line break").should == "When failing step"
+      span = '<span class="source_file">features/steps/whatever.rb:15</span>'
+      clean_cell("pass:Given a step #{span}").should == "Given a step"
+      clean_cell("pass:Given a <b>bold</b> step #{span}").should == "Given a bold step"
+      clean_cell("pass:Given a step #{span} <br>with line break").should == "Given a step"
     end
   end
 

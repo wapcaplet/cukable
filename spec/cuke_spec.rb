@@ -9,7 +9,7 @@ describe Cukable::Cuke do
   end
 
   after(:each) do
-    File.delete(@feature)
+    File.delete(@feature) if File.exists?(@feature)
   end
 
 
@@ -99,5 +99,36 @@ describe Cukable::Cuke do
     end
 
   end # write_feature
+
+
+  context "#merge_table_with_results" do
+    it "marks missing lines as ignored" do
+      input_table = [
+        ['Feature: Merge'],
+        ['Scenario: Skip'],
+        ['Given a scenario is skipped'],
+        ['Scenario: Run'],
+        ['Given a scenario is run'],
+        ['Scenario: Skip again'],
+        ['Given a scenario is skipped'],
+      ]
+      json_results = [
+        ['report:Feature: Merge'],
+        ['report:Scenario: Run'],
+        ['pass:Given a <b>scenario</b> is run'],
+      ]
+      expected_results = [
+        ['report:Feature: Merge'],
+        ['ignore:Scenario: Skip'],
+        ['ignore:Given a scenario is skipped'],
+        ['report:Scenario: Run'],
+        ['pass:Given a <b>scenario</b> is run'],
+        ['ignore:Scenario: Skip again'],
+        ['ignore:Given a scenario is skipped'],
+      ]
+      actual_results = @cuke.merge_table_with_results(input_table, json_results)
+      actual_results.should == expected_results
+    end
+  end # merge_table_with_results
 
 end

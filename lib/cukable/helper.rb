@@ -136,6 +136,21 @@ module Cukable
       return result
     end
 
+    # Return the given string, cleaned of any HTML tags and status indicators
+    # added by the JSON output formatter. The intent here is to take a table
+    # cell from JSON output, and make it match the original FitNesse table
+    # cell.
+    def clean_cell(string)
+      # FIXME: This may not be terribly efficient...
+      # strip first to get a copy of the string
+      result = string.strip
+      result.gsub!(/^[^:]*:(.*)$/, '\1')
+      result.gsub!(/<b>(.*)<\/b>/, '\1')
+      result.gsub!(/<br\/?>.*/, '')
+      result.gsub!(/\(Undefined Step\)/, '')
+      result.gsub!(/<span[^>]*>.*<\/span>/, '')
+      return result.strip
+    end
   end
 end
 

@@ -50,24 +50,38 @@ Feature: Cuke fixture
       """
 
 
-  @focus
   Scenario: Accelerate suite
     Given a FitNesse wiki
     And a Cuke fixture
-    And a file named "features/passing.feature" with:
+    And a Suite "FeatureS" containing:
       """
-      Feature: Passing
-        Scenario: Passing
-          Given a step passes
+      !define TEST_SYSTEM {slim}
+      !define TEST_RUNNER {rubyslim}
+      !define COMMAND_PATTERN {rubyslim}
+      !define CUCUMBER_ARGS {}
       """
-    And a file named "features/failing.feature" with:
+
+    And a Test "FeatureS/AaaAccelerator" containing:
       """
-      Feature: Failing
-        Scenario: Failing
-          Given a step fails
       """
-    When I convert features to FitNesse
-    And I run the accelerator for suite "FeatureS"
+
+    And a Test "FeatureS/PassingFeature" containing:
+      """
+      !| Table: Cuke |
+      | Feature: Passing |
+      | Scenario: Passing |
+      | Given a step passes |
+      """
+
+    And a Test "FeatureS/FailingFeature" containing:
+      """
+      !| Table: Cuke |
+      | Feature: Failing |
+      | Scenario: Failing |
+      | Given a step fails |
+      """
+
+    When I run the accelerator for suite "FeatureS"
 
     Then "slim_results/features/fitnesse/PassingFeature_0.feature.json" should contain JSON:
       """
@@ -86,4 +100,48 @@ Feature: Cuke fixture
         ["error:Given a step fails"]
       ]
       """
+
+
+  @wip
+  Scenario: Accelerate suite with skipped tags
+    # FIXME: Fails when run with other scenarios. Lack of init/cleanup in self_test dir?
+    Given a FitNesse wiki
+    And a Cuke fixture
+
+    And a Test "FeatureS/SkippedScenariosFeature" containing:
+      """
+      !| Table: Cuke |
+      | Feature: Passing |
+      | @skip |
+      | Scenario: Skipped scenario |
+      | Given a step passes |
+      | Scenario: Passing |
+      | Given a step passes |
+      | @skip |
+      | Scenario: Another skipped scenario |
+      | Given a step passes |
+      """
+
+    And a Test "FeatureS/SkippedFeature" containing:
+      """
+      !| Table: Cuke |
+      | @skip |
+      | Feature: Skipped feature |
+      | Scenario: Failing |
+      | Given a step fails |
+      """
+
+    When I set CUCUMBER_ARGS to "--tags ~@skip"
+    And I run the accelerator for suite "FeatureS"
+
+    Then "slim_results/features/fitnesse/SkippedScenariosFeature_0.feature.json" should contain JSON:
+      """
+      [
+        ["report:Feature: Passing"],
+        ["report:Scenario: Passing"],
+        ["error:Given a step passes"]
+      ]
+      """
+
+    And "slim_results/features/fitnesse/SkippedFeature_0.feature.json" should not exist
 

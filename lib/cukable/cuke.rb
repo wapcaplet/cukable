@@ -171,19 +171,6 @@ module Cukable
     # with all other original rows marked as skipped.
     def merge_table_with_results(input_table, json_results)
       final_results = []
-      def clean_cell(cell)
-        return cell.gsub(
-          /^[^:]*:(.*)$/, '\1'
-        ).gsub(
-          /<b>(.*)<\/b>/, '\1'
-        ).gsub(
-          /<br\/>/, ''
-        ).gsub(
-          /\(Undefined Step\)/, ''
-        ).gsub(
-          /<span[^>]*>.*<\/span>/, ''
-        ).strip
-      end
       # Strip extra stuff from the results to get the original line
       clean_results = json_results.collect do |row|
         row.collect do |cell|

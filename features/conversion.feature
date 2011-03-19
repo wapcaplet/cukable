@@ -19,55 +19,7 @@ Feature: Conversion
       """
     When I convert features to FitNesse
 
-    Then "FitNesseRoot/FeatureS/PassingFeature/content.txt" should contain:
-      """
-      !| Table: Cuke |
-      | Feature: Passing |
-      | Scenario: Passing |
-      | Given a step passes |
-      """
-
-    And "FitNesseRoot/FeatureS/PassingFeature/properties.xml" should contain:
-      """
-      <?xml version="1.0"?>
-      <properties>
-        <Edit>true</Edit>
-        <Files>true</Files>
-        <Properties>true</Properties>
-        <RecentChanges>true</RecentChanges>
-        <Refactor>true</Refactor>
-        <Search>true</Search>
-        <Test/>
-        <Versions>true</Versions>
-        <WhereUsed>true</WhereUsed>
-      </properties>
-      """
-
-    And "FitNesseRoot/FeatureS/FailingFeature/content.txt" should contain:
-      """
-      !| Table: Cuke |
-      | Feature: Failing |
-      | Scenario: Failing |
-      | Given a step fails |
-      """
-
-    And "FitNesseRoot/FeatureS/FailingFeature/properties.xml" should contain:
-      """
-      <?xml version="1.0"?>
-      <properties>
-        <Edit>true</Edit>
-        <Files>true</Files>
-        <Properties>true</Properties>
-        <RecentChanges>true</RecentChanges>
-        <Refactor>true</Refactor>
-        <Search>true</Search>
-        <Test/>
-        <Versions>true</Versions>
-        <WhereUsed>true</WhereUsed>
-      </properties>
-      """
-
-    And "FitNesseRoot/FeatureS/content.txt" should contain:
+    Then I should have a Suite "FeatureS" containing:
       """
       These variables must be defined for rubyslim to work:
       !define TEST_SYSTEM {slim}
@@ -80,19 +32,23 @@ Feature: Conversion
       !contents -R9 -p -f -h
       """
 
-    And "FitNesseRoot/FeatureS/properties.xml" should contain:
+    And I should have a Test "FeatureS/AaaAccelerator" containing:
       """
-      <?xml version="1.0"?>
-      <properties>
-        <Edit>true</Edit>
-        <Files>true</Files>
-        <Properties>true</Properties>
-        <RecentChanges>true</RecentChanges>
-        <Refactor>true</Refactor>
-        <Search>true</Search>
-        <Suite/>
-        <Versions>true</Versions>
-        <WhereUsed>true</WhereUsed>
-      </properties>
+      """
+
+    And I should have a Test "FeatureS/PassingFeature" containing:
+      """
+      !| Table: Cuke |
+      | Feature: Passing |
+      | Scenario: Passing |
+      | Given a step passes |
+      """
+
+    And I should have a Test "FeatureS/FailingFeature" containing:
+      """
+      !| Table: Cuke |
+      | Feature: Failing |
+      | Scenario: Failing |
+      | Given a step fails |
       """
 

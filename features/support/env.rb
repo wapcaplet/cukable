@@ -104,7 +104,7 @@ class CukableHelper
   def create_file(filename, content)
     in_test_dir do
       FileUtils.mkdir_p(File.dirname(filename)) unless File.directory?(File.dirname(filename))
-      File.open(filename, 'w') { |f| f << content + "\n" }
+      File.open(filename, 'w') { |f| f << content }
     end
   end
 
@@ -152,6 +152,25 @@ class CukableHelper
       end
     end
   end
+
+
+  def xml_content(type)
+    return [
+      '<?xml version="1.0"?>',
+      '<properties>',
+      '  <Edit>true</Edit>',
+      '  <Files>true</Files>',
+      '  <Properties>true</Properties>',
+      '  <RecentChanges>true</RecentChanges>',
+      '  <Refactor>true</Refactor>',
+      '  <Search>true</Search>',
+      "  <#{type}/>",
+      '  <Versions>true</Versions>',
+      '  <WhereUsed>true</WhereUsed>',
+      '</properties>',
+    ].join("\n")
+  end
+
 end
 
 World do
