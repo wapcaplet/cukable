@@ -17,6 +17,9 @@ if ARGV.count == 0
   puts "Usage: cuke2fit.rb <features_path> <fitnesse_path>"
 else
   converter = Cukable::Converter.new
-  converter.features_to_fitnesse(ARGV[0], ARGV[1])
+  messages = converter.features_to_fitnesse(ARGV[0], ARGV[1])
+  messages.each do |message|
+    puts message
+  end
 end
 

@@ -157,6 +157,9 @@ module Cukable
     #   will be written as wiki pages. This must be the path of an existing page.
     #
     def features_to_fitnesse(features_path, fitnesse_path)
+      # Status messages to return
+      messages = []
+
       # Ensure FitNesse directory already exists
       if !File.directory?(fitnesse_path)
         raise ArgumentError, "FitNesse path must be an existing directory."
@@ -181,8 +184,9 @@ module Cukable
         # Write the wikitext to a wiki page
         create_wiki_page(wiki_path, content, 'test')
         # Show user some status output
-        puts "OK: #{feature_path} => #{wiki_path}"
+        messages << "OK: #{feature_path} => #{wiki_path}"
       end
+      return messages
     end
 
 
