@@ -1,3 +1,5 @@
+# conversion.rb
+
 # FIXME: This is a hack to support running cucumber features.
 # May have unwanted side-effects.
 $:.unshift File.join(File.dirname(__FILE__), '..')
@@ -6,6 +8,8 @@ require 'fileutils'
 require 'cukable/helper'
 
 module Cukable
+  # Supporting functions for converting Cucumber features to
+  # FitNesse wiki pages and vice-versa.
   module Conversion
 
     # Wikify the given feature, and return lines of FitNesse wikitext.
@@ -139,6 +143,7 @@ end
 
 
 module Cukable
+  # Main front-end for converting features, used by the `cuke2fit` script.
   class Converter
 
     include Cukable::Helper

@@ -226,7 +226,16 @@ Cucumber instance each time, simply create a new child page of `MyFeatures` call
 
 The `AaaAccelerator` page does not need to have any content; you can leave it
 empty if you like. Its existence alone will cause acceleration to take effect
-for the suite that it's in.
+for the suite that it's in. To make this magic happen, you must add this to your
+`SetUp` page for the suite:
+
+    | script | Cuke |
+    | accelerate; | ${PAGE_PATH}.${PAGE_NAME} | ${CUCUMBER_ARGS} |
+
+Include this exactly as it appears; the variables will be expanded to the
+name of your `AaaAccelerator` page when the suite runs. The `CUCUMBER_ARGS`
+piece is an optional argument that passes any defined command-line arguments
+to Cucumber (see below).
 
 You can nest suites inside each other, and each suite can have its own
 `AaaAccelerator` page. Whenever you execute a suite, the highest-level

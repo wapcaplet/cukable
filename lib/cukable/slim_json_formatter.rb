@@ -1,3 +1,4 @@
+# slim_json_formatter.rb
 
 require 'cucumber/formatter/console'
 require 'cucumber/formatter/io'
@@ -7,7 +8,7 @@ require 'json'
 
 module Cucumber
   module Formatter
-    # FitNesse SliM JSON output formatter
+    # FitNesse SliM JSON output formatter for Cucumber
     class SlimJSON
       include Console
       include Io

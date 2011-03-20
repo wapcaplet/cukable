@@ -1,13 +1,4 @@
-# Cucumber fixture, for running tests with Rubyslim
-#
-# Create a TableTable formatted like this:
-#
-#   | Table: Cuke |
-#   | Feature:    | Optional feature name  |
-#   | Scenario:   | Optional scenario name |
-#   | Given       | some initial condition |
-#   | When        | I do some action       |
-#   | Then        | the result is correct  |
+# cuke.rb
 
 # FIXME: This is a hack to support running cucumber features.
 # May have unwanted side-effects.
@@ -26,6 +17,7 @@ module Cukable
   class FormatError < Exception
   end
 
+  # This fixture allows running Cucumber from FitNesse via rubyslim.
   class Cuke
 
     include Cukable::Helper

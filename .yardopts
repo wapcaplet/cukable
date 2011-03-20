@@ -1,5 +1,6 @@
 --readme README.md
 --markup markdown
+--no-highlight
 lib/**/*.rb
 -
 History.md
