@@ -4,17 +4,38 @@ require 'cgi'
 require 'digest/md5'
 
 module Cukable
+
+  # Common/shared methods supporting the Cukable library
   module Helper
+
     # Return `filename` with `prefix` and `suffix` removed, and any
     # path-separators converted to underscores.
+    #
+    # @param [String] filename
+    #   Filename to clean
+    # @param [String] prefix
+    #   Leading text to remove
+    # @param [String] suffix
+    #   Trailing text to remove
+    #
+    # @return [String]
+    #   Cleaned filename with prefix and suffix removed
+    #
     def clean_filename(filename, prefix, suffix)
       middle = filename.gsub(/^#{prefix}\/(.+)\/#{suffix}$/, '\1')
       return middle.gsub('/', '_')
     end
 
 
-    # Remove FitNesse-generated link cruft from a string. Strips <a ...></a> tags,
-    # keeping the inner content unless that content is '[?]'.
+    # Remove FitNesse-generated link cruft from a string. Strips `<a ...></a>`
+    # tags, keeping the inner content unless that content is '[?]'.
+    #
+    # @param [String] string
+    #   The string to remove link-cruft from
+    #
+    # @return [String]
+    #   Same string with `<a ...></a>` and `[?]` removed.
+    #
     def remove_cruft(string)
       string.gsub(/<a [^>]*>([^<]*)<\/a>/, '\1').gsub('[?]', '')
     end
@@ -129,17 +150,33 @@ module Cukable
     end
 
 
-    # Unescape any HTML entities and FitNesse markup in the given string
+    # Unescape any HTML entities and FitNesse markup in the given string.
+    #
+    # @param [String] string
+    #   The string to unescape HTML entities in
+    #
+    # @return [String]
+    #   Original string with HTML entities unescaped, and FitNesse `!-...-!`
+    #   markup removed.
+    #
     def unescape(string)
       result = CGI.unescapeHTML(string)
       result.gsub!(/!-(.*?)-!/, '\1')
       return result
     end
 
+
     # Return the given string, cleaned of any HTML tags and status indicators
     # added by the JSON output formatter. The intent here is to take a table
     # cell from JSON output, and make it match the original FitNesse table
     # cell.
+    #
+    # @param [String] string
+    #   String to clean
+    #
+    # @return [String]
+    #   String with any SlimJSON-added stuff removed.
+    #
     def clean_cell(string)
       # FIXME: This may not be terribly efficient...
       # strip first to get a copy of the string

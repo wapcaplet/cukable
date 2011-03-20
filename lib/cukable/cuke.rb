@@ -24,12 +24,25 @@ module Cukable
     include Cukable::Conversion
 
     # Hash mapping the MD5 digest of a feature to the .json output for that
-    # feature. Something of a hack, using a class variable for this, but it
-    # seems the easiest way to make the hash persist across test runs.
+    # feature. This tells `do_table` whether a feature has already been
+    # run by the accelerator, and prevents it from being run again.
     @@output_files = Hash.new
-    @@lastSuiteName = nil
+
+    # Last-run FitNesse suite. Indicates whether a higher-level accelerator
+    # has already run. For example, if `HelloWorld.AaaAccelerator` has already
+    # run, then there's no need to run `HelloWorld.SuiteOne.AaaAccelerator` or
+    # `HelloWorld.SuiteTwo.AaaAccelerator`.
+    @@last_suite_name = nil
 
 
+    # Create the fixture, with optional Cucumber command-line arguments.
+    #
+    # @param [String] cucumber_args
+    #   If this constructor is called from a `Cuke` table, then
+    #   these arguments will be passed to Cucumber for that single
+    #   test. Otherwise, the `cucumber_args` passed to `accelerate`
+    #   take precedence.
+    #
     def initialize(cucumber_args='')
       # Directory where temporary .feature files will be written
       @features_dir = File.join('features', 'fitnesse')
@@ -40,7 +53,20 @@ module Cukable
     end
 
 
-    # Fixture method call.  Pass the path of the suite. (RubySlim.HelloWorld, for example.)
+    # Perform a batch-run of all features found in siblings of the given test
+    # in the FitNesse wiki tree. This only takes effect if `test_name` ends
+    # with `AaaAccelerator`; otherwise, nothing happens. The test results for
+    # each feature are stored in `@@output_files`, indexed by a hash of the
+    # feature contents; the individual tests in the suite will then invoke
+    # `do_table`, which looks up the test results in `@@output_files`.
+    #
+    # @param [String] test_name
+    #   Dotted name of the test page in FitNesse. For example,
+    #   `'HelloWorld.AaaAccelerator'`
+    # @param [String] cucumber_args
+    #   Command-line arguments to pass to Cucumber for this run.
+    #   Affects all tests in the suite.
+    #
     def accelerate(test_name, cucumber_args='')
       # Remove wiki cruft from the test_path
       test_name = remove_cruft(test_name)
@@ -55,18 +81,15 @@ module Cukable
         suite_path = parts[0..-2].join('/')
       end
 
-      # Verify that a higher-level accelerator has not already run analyzeSuite
-      # covering this part of the tree. E.g. RubySlim.HelloWorld.NewTest starts
-      # with "RubySlim.HelloWorld". But RubySlim.NewTest does not start with
-      # "RubySlim.HelloWorld".
-      if @@lastSuiteName != nil && suite_path =~ /^#{@@lastSuiteName}/
+      # If a higher-level accelerator has already run, skip this run
+      if @@last_suite_name != nil && suite_path =~ /^#{@@last_suite_name}/
         return true
+      # Otherwise, this is the top-level accelerator in the suite
       else
-        @@lastSuiteName = suite_path
+        @@last_suite_name = suite_path
       end
 
-      # Find the FitNesseRoot.
-      # Find the suite in the FitNesseRoot.
+      # Find the suite in the FitNesseRoot
       suite = "FitNesseRoot/" + suite_path
 
       # Delete and recreate @features_dir and @output_dir
@@ -125,8 +148,17 @@ module Cukable
     end
 
 
-    # Process the given Cucumber table, containing one step per line
-    # Table Table fixture method call.
+    # Execute a single test in a FitNesse TableTable.
+    #
+    # @param [Array] table
+    #   Rows in the TableTable, where each row is an Array of strings
+    #   containing cell contents.
+    #
+    # @return [Array]
+    #   Same structure and number of rows as the input table, but with standard
+    #   SliM status indicators and additional HTML formatting for displaying
+    #   the test results in place of the original table.
+    #
     def do_table(table)
       # If the digest of this table already exists in @output files,
       # simply return the results that were already generated.
@@ -161,7 +193,17 @@ module Cukable
 
     # Merge the original input table with the actual results, and
     # return a new table that puts the results section in the correct place,
-    # with all other original rows marked as skipped.
+    # with all other original rows marked as ignored.
+    #
+    # @param [Array] input_table
+    #   The original TableTable content as it came from FitNesse
+    # @param [Array] json_results
+    #   JSON results returned from Cucumber, via the SlimJSON formatter
+    #
+    # @return [Array]
+    #   Original table with JSON results merged into the corresponding
+    #   rows, and all other rows (if any) marked as ignored.
+    #
     def merge_table_with_results(input_table, json_results)
       final_results = []
       # Strip extra stuff from the results to get the original line
@@ -188,8 +230,14 @@ module Cukable
     end
 
 
-    # Write a Cucumber .feature file containing the lines of Gherkin text
-    # found in `table`, where `table` is an array of arrays of strings.
+    # Write a Cucumber `.feature` file containing the lines of Gherkin text
+    # found in `table`.
+    #
+    # @param [Array] table
+    #   TableTable content as it came from FitNesse
+    # @param [String] feature_filename
+    #   Name of `.feature` file to write the converted Cucumber feature to
+    #
     def write_feature(table, feature_filename)
       # Have 'Feature:' or 'Scenario:' been found in the input?
       got_feature = false
@@ -230,6 +278,12 @@ module Cukable
 
     # Run cucumber on `feature_filenames`, and output
     # results in FitNesse table format to `output_dir`.
+    #
+    # @param [Array] feature_filenames
+    #   All `.feature` files to execute
+    # @param [String] output_dir
+    #   Where to save the SlimJSON-formatted results
+    #
     def run_cucumber(feature_filenames, output_dir)
       req = "--require /home/eric/git/cukable/lib/"
       format = "--format Cucumber::Formatter::SlimJSON"
