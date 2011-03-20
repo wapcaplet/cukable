@@ -152,6 +152,10 @@ module Cukable
 
     # Unescape any HTML entities and FitNesse markup in the given string.
     #
+    # @example
+    #   unescape("Some &lt;stuff&gt; to !-unescape-!")
+    #     #=> "Some <stuff> to unescape"
+    #
     # @param [String] string
     #   The string to unescape HTML entities in
     #

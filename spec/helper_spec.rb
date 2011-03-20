@@ -25,7 +25,7 @@ describe Cukable::Helper do
       literalize("http://my.site/ is my site").should == "!-http://my.site/-! is my site"
       literalize("My site http://my.site/ is cool").should == "My site !-http://my.site/-! is cool"
     end
-  end
+  end # literalize
 
 
   context "#wikify" do
@@ -79,7 +79,7 @@ describe Cukable::Helper do
       wikify("WikiWord with suffix").should == "WikiWordWithSuffix"
       wikify("prefix before WikiWord").should == "PrefixBeforeWikiWord"
     end
-  end
+  end # wikify
 
 
   context "#wikify_path" do
@@ -92,7 +92,7 @@ describe Cukable::Helper do
       wikify_path("features/basic").should == "FeatureS/BasiC"
       wikify_path("features/basic/some.feature").should == "FeatureS/BasiC/SomeFeature"
     end
-  end
+  end # wikify_path
 
 
   context "#clean_filename" do
@@ -103,7 +103,7 @@ describe Cukable::Helper do
     it "removes prefix and suffix" do
       clean_filename('abc/some/path/xyz', 'abc', 'xyz').should == 'some_path'
     end
-  end
+  end # clean_filename
 
 
   context "#remove_cruft" do
@@ -151,6 +151,7 @@ describe Cukable::Helper do
     end
   end # table_digest
 
+
   context "#clean_cell" do
     it "strips all markup added by the SlimJSON formatter" do
       clean_cell("report:Feature: Some feature").should == "Feature: Some feature"
@@ -165,6 +166,21 @@ describe Cukable::Helper do
       clean_cell("pass:Given a <b>bold</b> step #{span}").should == "Given a bold step"
       clean_cell("pass:Given a step #{span} <br>with line break").should == "Given a step"
     end
-  end
+  end # clean_cell
+
+
+  context "#unescape" do
+    it "unescapes HTML entities" do
+      unescape("With &lt;angle brackets&gt;").should == "With <angle brackets>"
+      unescape("Stuff &amp; things").should == "Stuff & things"
+    end
+
+    it "unescapes FitNesse literal markup" do
+      unescape("!-a literal-!").should == "a literal"
+      unescape("ends with !-a literal-!").should == "ends with a literal"
+      unescape("!-starts with-! a literal").should == "starts with a literal"
+    end
+  end # unescape
 
 end
+
