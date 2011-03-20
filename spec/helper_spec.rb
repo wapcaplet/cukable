@@ -122,6 +122,11 @@ describe Cukable::Helper do
 
 
   context "#table_digest" do
+    it "returns the expected digest for a known table" do
+      table_digest(['foo', 'bar']).should == '3858f62230ac3c915f300c664312c63f'
+      table_digest(['foo', 'baz']).should == '80338e79d2ca9b9c090ebaaa2ef293c7'
+    end
+
     it "returns the same digest for identical input" do
       table1 = [
         ["Name", "Quest"],
@@ -148,6 +153,18 @@ describe Cukable::Helper do
         ["Lancelot", "Holy Grail"],
       ]
       table_digest(table1).should_not == table_digest(table2)
+    end
+
+    it "unescapes HTML entities before calculating digest" do
+      table1 = [
+        ["Name", "Quest"],
+        ["!-Arthur-!", "Holy &lt;Grail&gt;"],
+      ]
+      table2 = [
+        ["Name", "Quest"],
+        ["Arthur", "Holy <Grail>"],
+      ]
+      table_digest(table1).should == table_digest(table2)
     end
   end # table_digest
 

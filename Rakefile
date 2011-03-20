@@ -3,7 +3,7 @@ require 'rspec/core/rake_task'
 require 'cucumber/rake/task'
 
 namespace :rcov do
-  desc "Run RSpec and generate coverage report"
+  desc "Run RSpec tests with coverage analysis"
   RSpec::Core::RakeTask.new(:spec) do |t|
     t.pattern = 'spec/**/*_spec.rb'
     t.rspec_opts = ['--color', '--format doc']
@@ -15,7 +15,7 @@ namespace :rcov do
     ]
   end
 
-  desc "Run Cucumber and generate coverage report"
+  desc "Run Cucumber tests with coverage analysis"
   Cucumber::Rake::Task.new(:cucumber) do |t|
     t.cucumber_opts = [
       "--format pretty",
@@ -29,10 +29,13 @@ namespace :rcov do
     ]
   end
 
-  desc "Run specs and features to generate aggregated coverage"
+  desc "Run RSpec and Cucumber tests with coverage analysis"
   task :all do |t|
     rm 'coverage.data' if File.exist?('coverage.data')
     Rake::Task['rcov:spec'].invoke
     Rake::Task['rcov:cucumber'].invoke
   end
 end
+
+task :default => ['rcov:all']
+

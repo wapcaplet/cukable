@@ -11,6 +11,10 @@ module Cukable
     # Return `filename` with `prefix` and `suffix` removed, and any
     # path-separators converted to underscores.
     #
+    # @example
+    #   clean_filename('abc/some/path/xyz', 'abc', 'xyz')
+    #     #=> 'some_path'
+    #
     # @param [String] filename
     #   Filename to clean
     # @param [String] prefix
@@ -30,6 +34,12 @@ module Cukable
     # Remove FitNesse-generated link cruft from a string. Strips `<a ...></a>`
     # tags, keeping the inner content unless that content is '[?]'.
     #
+    # @example
+    #   remove_cruft('Go to <a href="SomePage">this page</a>')
+    #     #=> 'Go to this page'
+    #   remove_cruft('See SomePage<a href="SomePage">[?]</a>')
+    #     #=> 'See SomePage'
+    #
     # @param [String] string
     #   The string to remove link-cruft from
     #
@@ -48,10 +58,10 @@ module Cukable
     # as to make FitNesse happy.
     #
     # @example
-    #   wikify("file.extension")   #=> "FileExtension"
-    #   wikify("with_underscore")  #=> "WithUnderscore"
-    #   wikify("having spaces")    #=> "HavingSpaces"
-    #   wikify("foo")              #=> "FoO"
+    #   wikify('file.extension')   #=> 'FileExtension'
+    #   wikify('with_underscore')  #=> 'WithUnderscore'
+    #   wikify('having spaces')    #=> 'HavingSpaces'
+    #   wikify('foo')              #=> 'FoO'
     #
     # @param [String] string
     #   String to wikify
@@ -78,7 +88,8 @@ module Cukable
     # URLs escaped with FitNesse's `!-...-!` string-literal markup.
     #
     # @example
-    #   literalize("With a CamelCase word") #=> "With a !-CamelCase-! word"
+    #   literalize('With a CamelCase word')
+    #     #=> 'With a !-CamelCase-! word'
     #
     # @param [String] string
     #   String to escape CamelCase words in
@@ -135,6 +146,12 @@ module Cukable
     # Return an MD5 digest string for `table`. Any HTML entities and FitNesse
     # markup in the table is unescaped before the digest is calculated.
     #
+    # @example
+    #   table_digest(['foo'], ['bar'])
+    #     #=> '3858f62230ac3c915f300c664312c63f'
+    #   table_digest(['foo', 'baz'])
+    #     #=> '80338e79d2ca9b9c090ebaaa2ef293c7'
+    #
     # @param [Array] table
     #   Array of strings, or nested Array of strings
     #
@@ -153,8 +170,8 @@ module Cukable
     # Unescape any HTML entities and FitNesse markup in the given string.
     #
     # @example
-    #   unescape("Some &lt;stuff&gt; to !-unescape-!")
-    #     #=> "Some <stuff> to unescape"
+    #   unescape('Some &lt;stuff&gt; to !-unescape-!')
+    #     #=> 'Some <stuff> to unescape'
     #
     # @param [String] string
     #   The string to unescape HTML entities in
@@ -174,6 +191,12 @@ module Cukable
     # added by the JSON output formatter. The intent here is to take a table
     # cell from JSON output, and make it match the original FitNesse table
     # cell.
+    #
+    # @example
+    #   clean_cell('pass:Given some <b>bold text</b>')
+    #     #=> 'Given some bold text'
+    #   clean_cell('pass:Given a step <br>with line break')
+    #     #=> 'Given a step'
     #
     # @param [String] string
     #   String to clean
