@@ -22,6 +22,27 @@ Most of the standard Cucumber/Gherkin syntax is supported by Cukable, including:
 - Tags for running/skipping scenarios and defining drivers (such as `@selenium`)
 
 
+Installation
+------------
+
+To install Cukable, do:
+
+    $ gem install cukable
+
+Cukable requires [rubyslim](http://github.com/unclebob/rubyslim) in order to
+work; as of this writing, rubyslim is not officially packaged as a gem, making
+it slightly more difficult to get Cukable working. For this reason, a makeshift
+rubyslim gem is provided in the `vendor/cache` directory of Cukable. Install
+this into whatever environment you plan to run Cukable under, like so:
+
+    $ gem install /path/to/cukable/vendor/cache/rubyslim-0.1.1.gem
+
+Please note that this is an unofficial gem, created without the sanction of the
+rubyslim author. Until such time as rubyslim gets an official gem distribution,
+please report any issues with it to the
+[Cukable issue tracker](http://github.com/wapcaplet/cukable/issues).
+
+
 Converting existing features
 ----------------------------
 
@@ -268,6 +289,16 @@ Put this at the top of any suite page, and any `AaaAccelerator` in that suite
 will pass those additional arguments to Cucumber. Note that these will override
 any arguments passed to individual tables, because Cucumber is only executed
 once for the entire suite.
+
+
+Support
+-------
+
+This README, along with API documentation on Cukable, are available on
+[rdoc.info](http://rdoc.info/github/wapcaplet/cukable/master/frames).
+
+Please report any bugs, complaints, and feature requests to the
+[issue tracker](http://github.com/wapcaplet/cukable/issues).
 
 
 Development
