@@ -285,7 +285,9 @@ module Cukable
     #   Where to save the SlimJSON-formatted results
     #
     def run_cucumber(feature_filenames, output_dir)
-      req = "--require /home/eric/git/cukable/lib/"
+      # Tell cucumber to require the directory where this file lives,
+      # so it can find the SlimJSON formatter
+      req = File.expand_path(File.dirname(__FILE__))
       format = "--format Cucumber::Formatter::SlimJSON"
       output = "--out #{output_dir}"
       args = @cucumber_args
