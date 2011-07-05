@@ -32,8 +32,10 @@ To install Cukable, do:
 Cukable requires [rubyslim](http://github.com/unclebob/rubyslim) in order to
 work; as of this writing, rubyslim is not officially packaged as a gem, making
 it slightly more difficult to get Cukable working. For this reason, a makeshift
-rubyslim gem is provided in the `vendor/cache` directory of Cukable. Install
-this into whatever environment you plan to run Cukable under, like so:
+rubyslim gem is provided in the `vendor/cache` directory of Cukable. Use `gem
+list cukable -d` to find out the full installation path for cukable, then
+append `/vendor/cache/rubyslim-0.1.1.gem` on the end of that,a nd install like
+so:
 
     $ gem install /path/to/cukable/vendor/cache/rubyslim-0.1.1.gem
 
