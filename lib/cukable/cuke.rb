@@ -35,6 +35,12 @@ module Cukable
     @@last_suite_name = nil
 
 
+    # Execute a block inside `@project_dir`.
+    def in_project_dir(&block)
+      Dir.chdir(@project_dir, &block)
+    end
+
+
     # Create the fixture, with optional Cucumber command-line arguments.
     #
     # @param [String] cucumber_args
@@ -43,10 +49,13 @@ module Cukable
     #   test. Otherwise, the `cucumber_args` passed to `accelerate`
     #   take precedence.
     #
-    def initialize(cucumber_args='')
-      # Directory where temporary .feature files will be written
+    def initialize(cucumber_args='', project_dir='.')
+      @project_dir = project_dir
+      # Path to where temporary .feature files will be written
+      # (relative to @project_dir)
       @features_dir = File.join('features', 'fitnesse')
-      # Directory where JSON output files will be written by Cucumber
+      # Where JSON output files will be written by Cucumber
+      # (relative to @project_dir)
       @output_dir = 'slim_results'
       # Cucumber command-line arguments
       @cucumber_args = cucumber_args
@@ -67,10 +76,11 @@ module Cukable
     #   Command-line arguments to pass to Cucumber for this run.
     #   Affects all tests in the suite.
     #
-    def accelerate(test_name, cucumber_args='')
+    def accelerate(test_name, cucumber_args='', project_dir='.')
       # Remove wiki cruft from the test_path
       test_name = remove_cruft(test_name)
       @cucumber_args = cucumber_args
+      @project_dir = project_dir
 
       # Don't run the accelerator unless we're on a page called AaaAccelerator
       if !(test_name =~ /^.*AaaAccelerator$/)
@@ -97,8 +107,10 @@ module Cukable
       # two people are running different suites at the same time?
       # The same suite at the same time?
       [@features_dir, @output_dir].each do |dir|
-        FileUtils.rm_rf(dir)
-        FileUtils.mkdir(dir)
+        in_project_dir do
+          FileUtils.rm_rf(dir)
+          FileUtils.mkdir(dir)
+        end
       end
 
       # Reset the digest-to-json map, then fill it in with the
@@ -107,7 +119,7 @@ module Cukable
 
       # Write all .feature files and run Cucumber on them
       feature_filenames = write_suite_features(suite)
-      run_cucumber(feature_filenames, @output_dir)
+      run_cucumber(feature_filenames)
 
       # Parse the results out over their sources.
       return true # Wait for someone to test one of the same tables.
@@ -127,7 +139,7 @@ module Cukable
         fitnesse_to_features(File.open(fitnesse_filename)).each do |table|
           # Write the table to a .feature file with a unique name
           feature_filename = File.join(
-            @features_dir, "#{feature}_#{number}.feature")
+            @project_dir, @features_dir, "#{feature}_#{number}.feature")
           feature_filenames << feature_filename
           begin
             write_feature(table, feature_filename)
@@ -140,7 +152,7 @@ module Cukable
 
           # Store the JSON filename in the digest hash
           digest = table_digest(table)
-          json_filename = File.join(@output_dir, "#{feature_filename}.json")
+          json_filename = File.join(@project_dir, @output_dir, "#{feature_filename}.json")
           @@output_files[digest] = json_filename
         end
       end
@@ -170,12 +182,14 @@ module Cukable
       else
         # FIXME: Move this to a separate method?
         # Create @features_dir if it doesn't exist
-        FileUtils.mkdir(@features_dir) unless File.directory?(@features_dir)
-        feature_filename = File.join(@features_dir, 'fitnesse_test.feature')
+        in_project_dir do
+          FileUtils.mkdir(@features_dir) unless File.directory?(@features_dir)
+        end
+        feature_filename = File.join(@project_dir, @features_dir, 'fitnesse_test.feature')
         # Create the feature file, run cucumber, return results
         write_feature(table, feature_filename)
-        run_cucumber([feature_filename], @output_dir)
-        results = File.join(@output_dir, "#{feature_filename}.json")
+        run_cucumber([feature_filename])
+        results = File.join(@project_dir, @output_dir, "#{feature_filename}.json")
       end
 
       # If the results file exists, parse it, merge with the original table,
@@ -243,7 +257,9 @@ module Cukable
       got_feature = false
       got_scenario = false
 
-      FileUtils.mkdir(@features_dir) unless File.directory?(@features_dir)
+      in_project_dir do
+        FileUtils.mkdir(@features_dir) unless File.directory?(@features_dir)
+      end
       file = File.open(feature_filename, 'w')
 
       # Error if there is not exactly one "Feature" row
@@ -277,24 +293,24 @@ module Cukable
 
 
     # Run cucumber on `feature_filenames`, and output
-    # results in FitNesse table format to `output_dir`.
+    # results in FitNesse table format to `@output_dir`.
     #
     # @param [Array] feature_filenames
     #   All `.feature` files to execute
-    # @param [String] output_dir
-    #   Where to save the SlimJSON-formatted results
     #
-    def run_cucumber(feature_filenames, output_dir)
+    def run_cucumber(feature_filenames)
       # Tell cucumber to require the directory where this file lives,
       # so it can find the SlimJSON formatter
       req = File.expand_path(File.dirname(__FILE__))
       format = "--format Cucumber::Formatter::SlimJSON"
-      output = "--out #{output_dir}"
+      output = "--out #{@output_dir}"
       args = @cucumber_args
       features = feature_filenames.join(" ")
 
-      #puts "cucumber #{req} #{format} #{output} #{args} #{features}"
-      system "cucumber #{req} #{format} #{output} #{args} #{features}"
+      puts "cucumber #{req} #{format} #{output} #{args} #{features}"
+      in_project_dir do
+        system "cucumber #{req} #{format} #{output} #{args} #{features}"
+      end
 
       # TODO: Ensure that the correct number of output files were written
       #if !File.exist?(@results_filename)
