@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = "cukable"
-  s.version = "0.1.1"
+  s.version = "0.1.2.beta"
   s.summary = "Runs Cucumber tests from FitNesse"
   s.description = <<-EOS
     Cukable allows running Cucumber test scenarios from FitNesse
