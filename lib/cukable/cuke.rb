@@ -49,8 +49,8 @@ module Cukable
     #   test. Otherwise, the `cucumber_args` passed to `accelerate`
     #   take precedence.
     #
-    def initialize(cucumber_args='', project_dir='.')
-      @project_dir = project_dir
+    def initialize(cucumber_args='', project_dir='')
+      @project_dir = project_dir ? '.' : project_dir
       # Path to where temporary .feature files will be written
       # (relative to @project_dir)
       @features_dir = File.join('features', 'fitnesse')
@@ -76,11 +76,11 @@ module Cukable
     #   Command-line arguments to pass to Cucumber for this run.
     #   Affects all tests in the suite.
     #
-    def accelerate(test_name, cucumber_args='', project_dir='.')
+    def accelerate(test_name, cucumber_args='', project_dir='')
       # Remove wiki cruft from the test_path
       test_name = remove_cruft(test_name)
       @cucumber_args = cucumber_args
-      @project_dir = project_dir
+      @project_dir = project_dir ? '.' : project_dir
 
       # Don't run the accelerator unless we're on a page called AaaAccelerator
       if !(test_name =~ /^.*AaaAccelerator$/)

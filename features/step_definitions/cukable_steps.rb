@@ -15,16 +15,6 @@ Given /^a FitNesse wiki$/ do
 end
 
 
-Given /^a FitNesse suite "(.+)" with:$/ do |page_name, content|
-  create_fitnesse_page(page_name, content)
-end
-
-
-Given /^a FitNesse test "(.+)" with:$/ do |page_name, content|
-  create_fitnesse_page(page_name, content)
-end
-
-
 Given /^a file named "(.+)" with:$/ do |filename, content|
   create_file(filename, content)
 end
@@ -79,6 +69,7 @@ Given /^a Cuke fixture$/ do
   in_test_dir do
     @cuke = Cukable::Cuke.new
     @cucumber_args = ''
+    @project_dir = ''
   end
 end
 
@@ -92,7 +83,7 @@ end
 
 When /^I write features for suite "(.+)"$/ do |suite_name|
   in_test_dir do
-    @cuke.write_suite_features("FitNesseRoot/#{suite_name}")
+    @cuke.write_suite_features(File.join(fitnesse_dir, suite_name))
   end
 end
 
@@ -107,6 +98,11 @@ end
 
 When /^I set CUCUMBER_ARGS to "(.+)"$/ do |args|
   @cucumber_args = args
+end
+
+
+When /^I set PROJECT_DIR to "(.+)"$/ do |project_dir|
+  @project_dir = project_dir
 end
 
 

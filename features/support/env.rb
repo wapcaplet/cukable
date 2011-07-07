@@ -61,18 +61,6 @@ class CukableHelper
   end
 
 
-  def create_fitnesse_page(page_name, content)
-    in_test_dir do
-      page_dir = File.join('FitNesseRoot', page_name)
-      page_file = File.join(page_dir, 'content.txt')
-      FileUtils.mkdir_p page_dir
-      File.open(page_file, 'w') do |file|
-        file.puts(content)
-      end
-    end
-  end
-
-
   # Create features/support/env.rb with necessary configuration for running
   # cucumber there
   def create_env_rb

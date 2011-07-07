@@ -20,17 +20,17 @@ Feature: Cuke fixture
   Scenario: Write features
     Given a Cuke fixture
     And a FitNesse wiki
-    And a FitNesse suite "TestSuite" with:
+    And a Suite "TestSuite" containing:
       """
       !contents
       """
-    And a FitNesse test "TestSuite/HelloWorld" with:
+    And a Test "TestSuite/HelloWorld" containing:
       """
       | Table: Cuke |
       | Feature: Hello |
       | Scenario: Hello |
       """
-    And a FitNesse test "TestSuite/GoodbyeWorld" with:
+    And a Test "TestSuite/GoodbyeWorld" containing:
       """
       | Table: Cuke |
       | Feature: Goodbye |
@@ -48,6 +48,45 @@ Feature: Cuke fixture
       Feature: Goodbye
       Scenario: Goodbye
       """
+
+
+  @wip
+  Scenario: Write features for multiple projects
+    Given a Cuke fixture
+    And a FitNesse wiki
+    And a Suite "TestSuite" containing:
+      """
+      !define TEST_SYSTEM {slim}
+      !define TEST_RUNNER {rubyslim}
+      !define COMMAND_PATTERN {rubyslim}
+      !contents
+      """
+
+    And a Suite "TestSuite/ProjectA" containing:
+      """
+      !define PROJECT_DIR {project_a}
+      !contents
+      """
+    And a Test "TestSuite/ProjectA/HelloWorld" containing:
+      """
+      | Table: Cuke |
+      | Feature: Hello |
+      | Scenario: Hello |
+      """
+
+    And a Suite "TestSuite/ProjectB" containing:
+      """
+      !define PROJECT_DIR {project_b}
+      !contents
+      """
+    And a Test "TestSuite/ProjectB/GoodbyeWorld" containing:
+      """
+      | Table: Cuke |
+      | Feature: Goodbye |
+      | Scenario: Goodbye |
+      """
+
+    When I write features for suite "TestSuite/ProjectA"
 
 
   Scenario: Accelerate suite
