@@ -16,9 +16,20 @@ class CukableHelper
   end
 
 
+  def fitnesse_dir
+    @fitnesse_dir ||= File.join(test_dir, "FitNesseRoot")
+  end
+
+
   # Execute `block` within `test_dir`
   def in_test_dir(&block)
     Dir.chdir(test_dir, &block)
+  end
+
+
+  # Execute `block` within `fitnesse_dir`
+  def in_fitnesse_dir(&block)
+    Dir.chdir(fitnesse_dir, &block)
   end
 
 
@@ -35,7 +46,7 @@ class CukableHelper
 
   def create_standard_fitnesse_dir
     in_test_dir do
-      FileUtils.mkdir_p 'FitNesseRoot'
+      FileUtils.mkdir_p fitnesse_dir
     end
   end
 
@@ -75,27 +86,25 @@ class CukableHelper
 
 
   def create_stepdefs
-    in_test_dir do
-      File.open('features/step_definitions/simple_steps.rb', 'w') do |file|
-        file.puts <<-EOF
-          Given /^a step passes$/ do
-            true.should == true
-          end
-          Given /^a step fails$/ do
-            true.should == false
-          end
-          Given /^a step is skipped$/ do
-            true.should == true
-          end
-          Given /^I have a table:$/ do |table|
-            table.raw.each do |row|
-              row.each do |cell|
-                cell.should == 'OK'
-              end
+    File.open('features/step_definitions/simple_steps.rb', 'w') do |file|
+      file.puts <<-EOF
+        Given /^a step passes$/ do
+          true.should == true
+        end
+        Given /^a step fails$/ do
+          true.should == false
+        end
+        Given /^a step is skipped$/ do
+          true.should == true
+        end
+        Given /^I have a table:$/ do |table|
+          table.raw.each do |row|
+            row.each do |cell|
+              cell.should == 'OK'
             end
           end
-        EOF
-      end
+        end
+      EOF
     end
   end
 
@@ -129,9 +138,7 @@ class CukableHelper
   # Ensure that the given file contains exactly the given text
   # (extra newlines/whitespace at beginning or end don't count)
   def file_should_contain(filename, text)
-    in_test_dir do
-      IO.read(filename).strip.should == text.strip
-    end
+    IO.read(filename).strip.should == text.strip
   end
 
 
@@ -141,14 +148,12 @@ class CukableHelper
   # should *start* with the expected JSON text, but could contain
   # additional stuff afterwards.
   def file_should_contain_json(filename, json_text)
-    in_test_dir do
-      got_json = JSON.load(File.open(filename))
-      want_json = JSON.parse(json_text)
+    got_json = JSON.load(File.open(filename))
+    want_json = JSON.parse(json_text)
 
-      got_json.zip(want_json).each do |got_row, want_row|
-        got_row.zip(want_row).each do |got, want|
-          got.should =~ /^#{want}/
-        end
+    got_json.zip(want_json).each do |got_row, want_row|
+      got_row.zip(want_row).each do |got, want|
+        got.should =~ /^#{want}/
       end
     end
   end

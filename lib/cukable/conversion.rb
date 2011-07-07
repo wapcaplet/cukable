@@ -183,7 +183,7 @@ module Cukable
         # Determine the appropriate wiki path name
         wiki_path = File.join(fitnesse_path, wikify_path(feature_path))
         # Fill ancestors of the wiki path with stubs for suites
-        create_suite_stubs(File.dirname(wiki_path))
+        create_suite_stubs(File.dirname(wiki_path), fitnesse_path)
         # Convert the .feature to wikitext
         content = feature_to_fitnesse(File.open(feature_path)).join("\n")
         # Write the wikitext to a wiki page
@@ -243,17 +243,20 @@ module Cukable
     #     #   FitNesseRoot/PageOne/PageTwo/content.txt
     #     #   FitNesseRoot/PageOne/PageTwo/PageThree/content.txt
     #
-    # @param [String] fitnesse_path
+    # @param [String] wiki_path
     #   Directory name of deepest level in the wiki hierarchy where
     #   you want content stubs to be created
+    # @param [String] root_path
+    #   FitNesseRoot directory--the stopping point in `wiki_path`'s
+    #   ancestry, where no more content stubs will be created.
     #
-    def create_suite_stubs(fitnesse_path)
+    def create_suite_stubs(wiki_path, root_path)
       # Content string to put in each stub file
       content = '!contents -R9 -p -f -h'
-      # Starting with `fitnesse_path`
-      path = fitnesse_path
-      # Until there are no more ancestor directories
-      while path != '.'
+      # Starting with `wiki_path`
+      path = wiki_path
+      # Until the root level is reached
+      until path == root_path
         # If there is no content.txt file, create one
         if !File.exists?(File.join(path, 'content.txt'))
           create_wiki_page(path, content, 'suite')

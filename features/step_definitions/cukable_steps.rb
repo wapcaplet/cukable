@@ -12,7 +12,6 @@ end
 
 Given /^a FitNesse wiki$/ do
   create_standard_fitnesse_dir
-  @fitnesse_root = 'FitNesseRoot'
 end
 
 
@@ -38,12 +37,16 @@ end
 
 
 Then /^"(.+)" should contain:$/ do |filename, text|
-  file_should_contain(filename, text)
+  in_test_dir do
+    file_should_contain(filename, text)
+  end
 end
 
 
 Then /^"(.+)" should contain JSON:$/ do |filename, json_text|
-  file_should_contain_json(filename, json_text)
+  in_test_dir do
+    file_should_contain_json(filename, json_text)
+  end
 end
 
 
@@ -57,16 +60,16 @@ end
 
 
 Given /^a (Test|Suite) "(.+)" containing:$/ do |type, filename, content|
-  content_file = File.join(@fitnesse_root, filename, 'content.txt')
-  properties_file = File.join(@fitnesse_root, filename, 'properties.xml')
+  content_file = File.join(fitnesse_dir, filename, 'content.txt')
+  properties_file = File.join(fitnesse_dir, filename, 'properties.xml')
   create_file(content_file, content)
   create_file(properties_file, xml_content(type))
 end
 
 
 Then /^I should have a (Test|Suite) "(.+)" containing:$/ do |type, filename, content|
-  content_file = File.join(@fitnesse_root, filename, 'content.txt')
-  properties_file = File.join(@fitnesse_root, filename, 'properties.xml')
+  content_file = File.join(fitnesse_dir, filename, 'content.txt')
+  properties_file = File.join(fitnesse_dir, filename, 'properties.xml')
   file_should_contain(content_file, content)
   file_should_contain(properties_file, xml_content(type))
 end
@@ -97,7 +100,7 @@ end
 When /^I convert features to FitNesse$/ do
   in_test_dir do
     @converter = Cukable::Converter.new
-    @converter.features_to_fitnesse('features', @fitnesse_root)
+    @converter.features_to_fitnesse('features', fitnesse_dir)
   end
 end
 

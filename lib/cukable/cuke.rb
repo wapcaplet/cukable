@@ -301,14 +301,14 @@ module Cukable
     def run_cucumber(feature_filenames)
       # Tell cucumber to require the directory where this file lives,
       # so it can find the SlimJSON formatter
-      req = File.expand_path(File.dirname(__FILE__))
+      req = "--require #{File.expand_path(File.dirname(__FILE__))}"
       format = "--format Cucumber::Formatter::SlimJSON"
       output = "--out #{@output_dir}"
       args = @cucumber_args
       features = feature_filenames.join(" ")
 
-      puts "cucumber #{req} #{format} #{output} #{args} #{features}"
       in_project_dir do
+        #puts "cucumber #{req} #{format} #{output} #{args} #{features}"
         system "cucumber #{req} #{format} #{output} #{args} #{features}"
       end
 
