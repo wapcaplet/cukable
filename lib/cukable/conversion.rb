@@ -165,6 +165,9 @@ module Cukable
       # Status messages to return
       messages = []
 
+      # Strip trailing slash
+      fitnesse_path = fitnesse_path.gsub(/\/$/, '')
+
       # Ensure FitNesse directory already exists
       if !File.directory?(fitnesse_path)
         raise ArgumentError, "FitNesse path must be an existing directory."
@@ -256,7 +259,7 @@ module Cukable
       # Starting with `wiki_path`
       path = wiki_path
       # Until the root level is reached
-      until path == root_path
+      until path == root_path || path == '.'
         # If there is no content.txt file, create one
         if !File.exists?(File.join(path, 'content.txt'))
           create_wiki_page(path, content, 'suite')
