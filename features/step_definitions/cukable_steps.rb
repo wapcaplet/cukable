@@ -65,11 +65,19 @@ Then /^I should have a (Test|Suite) "(.+)" containing:$/ do |type, filename, con
 end
 
 
-Given /^a Cuke fixture$/ do
+Given /^a default Cuke fixture$/ do
   in_test_dir do
     @cuke = Cukable::Cuke.new
-    @cucumber_args = ''
-    @project_dir = ''
+  end
+end
+
+
+Given /^a Cuke fixture with arguments:$/ do |arg_table|
+  args = arg_table.rows_hash
+  cucumber_args = args['cucumber_args'] or ''
+  project_dir = args['project_dir'] or ''
+  in_test_dir do
+    @cuke = Cukable::Cuke.new(cucumber_args, project_dir)
   end
 end
 
@@ -93,16 +101,6 @@ When /^I convert features to FitNesse$/ do
     @converter = Cukable::Converter.new
     @converter.features_to_fitnesse('features', fitnesse_dir)
   end
-end
-
-
-When /^I set CUCUMBER_ARGS to "(.+)"$/ do |args|
-  @cucumber_args = args
-end
-
-
-When /^I set PROJECT_DIR to "(.+)"$/ do |project_dir|
-  @project_dir = project_dir
 end
 
 

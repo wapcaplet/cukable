@@ -4,7 +4,7 @@ Feature: Cuke fixture
     Given a standard Cucumber project directory structure
 
   Scenario: Do table
-    Given a Cuke fixture
+    Given a default Cuke fixture
     When I do this table:
       | Feature: Table |
       | Scenario: Table |
@@ -18,7 +18,7 @@ Feature: Cuke fixture
       """
 
   Scenario: Write features
-    Given a Cuke fixture
+    Given a default Cuke fixture
     And a FitNesse wiki
     And a Suite "TestSuite" containing:
       """
@@ -50,10 +50,8 @@ Feature: Cuke fixture
       """
 
 
-  @wip
   Scenario: Write features for multiple projects
-    Given a Cuke fixture
-    And a FitNesse wiki
+    Given a FitNesse wiki
     And a Suite "TestSuite" containing:
       """
       !define TEST_SYSTEM {slim}
@@ -64,7 +62,6 @@ Feature: Cuke fixture
 
     And a Suite "TestSuite/ProjectA" containing:
       """
-      !define PROJECT_DIR {project_a}
       !contents
       """
     And a Test "TestSuite/ProjectA/HelloWorld" containing:
@@ -73,10 +70,18 @@ Feature: Cuke fixture
       | Feature: Hello |
       | Scenario: Hello |
       """
+    And a Cuke fixture with arguments:
+      | project_dir | project_a |
 
-    And a Suite "TestSuite/ProjectB" containing:
+    When I write features for suite "TestSuite/ProjectA"
+    Then "project_a/features/fitnesse/HelloWorld_0.feature" should contain:
       """
-      !define PROJECT_DIR {project_b}
+      Feature: Hello
+      Scenario: Hello
+      """
+
+    Given a Suite "TestSuite/ProjectB" containing:
+      """
       !contents
       """
     And a Test "TestSuite/ProjectB/GoodbyeWorld" containing:
@@ -85,13 +90,20 @@ Feature: Cuke fixture
       | Feature: Goodbye |
       | Scenario: Goodbye |
       """
+    And a Cuke fixture with arguments:
+      | project_dir | project_b |
 
-    When I write features for suite "TestSuite/ProjectA"
+    When I write features for suite "TestSuite/ProjectB"
+    Then "project_b/features/fitnesse/GoodbyeWorld_0.feature" should contain:
+      """
+      Feature: Goodbye
+      Scenario: Goodbye
+      """
 
 
   Scenario: Accelerate suite
     Given a FitNesse wiki
-    And a Cuke fixture
+    And a default Cuke fixture
     And a Suite "FeatureS" containing:
       """
       !define TEST_SYSTEM {slim}
@@ -142,10 +154,12 @@ Feature: Cuke fixture
 
 
   @wip
+  @focus
   Scenario: Accelerate suite with skipped tags
     # FIXME: Fails when run with other scenarios. Lack of init/cleanup in self_test dir?
     Given a FitNesse wiki
-    And a Cuke fixture
+    And a Cuke fixture with arguments:
+      | cucumber_args | --tags ~@skip |
 
     And a Test "FeatureS/SkippedScenariosFeature" containing:
       """
@@ -170,7 +184,6 @@ Feature: Cuke fixture
       | Given a step fails |
       """
 
-    When I set CUCUMBER_ARGS to "--tags ~@skip"
     And I run the accelerator for suite "FeatureS"
 
     Then "slim_results/features/fitnesse/SkippedScenariosFeature_0.feature.json" should contain JSON:

@@ -1,4 +1,3 @@
-@wip
 Feature: Slim JSON Formatter
 
   Background:
@@ -146,8 +145,7 @@ Feature: Slim JSON Formatter
           ["report:Examples: "],
           ["report: ", "pass:result"],
           ["report: ", "pass:passes"],
-          ["report: ", "fail:fails"],
-          ["fail:<br/>"]
+          ["fail:", "fail:fails"]
         ]
       """
 

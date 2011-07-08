@@ -50,7 +50,6 @@ module Cukable
     #   take precedence.
     #
     def initialize(cucumber_args='', project_dir='')
-      @project_dir = project_dir ? '.' : project_dir
       # Path to where temporary .feature files will be written
       # (relative to @project_dir)
       @features_dir = File.join('features', 'fitnesse')
@@ -58,7 +57,9 @@ module Cukable
       # (relative to @project_dir)
       @output_dir = 'slim_results'
       # Cucumber command-line arguments
-      @cucumber_args = cucumber_args
+      @cucumber_args = cucumber_args or ''
+      @project_dir = File.expand_path((project_dir or '.'))
+      ensure_directory(@project_dir)
     end
 
 
@@ -80,7 +81,8 @@ module Cukable
       # Remove wiki cruft from the test_path
       test_name = remove_cruft(test_name)
       @cucumber_args = cucumber_args
-      @project_dir = project_dir ? '.' : project_dir
+      @project_dir = File.expand_path((project_dir or '.'))
+      ensure_directory(@project_dir)
 
       # Don't run the accelerator unless we're on a page called AaaAccelerator
       if !(test_name =~ /^.*AaaAccelerator$/)
@@ -118,8 +120,10 @@ module Cukable
       @@output_files = Hash.new
 
       # Write all .feature files and run Cucumber on them
-      feature_filenames = write_suite_features(suite)
-      run_cucumber(feature_filenames)
+      in_project_dir do
+        feature_filenames = write_suite_features(suite)
+        run_cucumber(feature_filenames)
+      end
 
       # Parse the results out over their sources.
       return true # Wait for someone to test one of the same tables.
@@ -139,10 +143,12 @@ module Cukable
         fitnesse_to_features(File.open(fitnesse_filename)).each do |table|
           # Write the table to a .feature file with a unique name
           feature_filename = File.join(
-            @project_dir, @features_dir, "#{feature}_#{number}.feature")
+            @features_dir, "#{feature}_#{number}.feature")
           feature_filenames << feature_filename
           begin
-            write_feature(table, feature_filename)
+            in_project_dir do
+              write_feature(table, feature_filename)
+            end
           rescue FormatError => err
             puts "!!!! Error writing #{feature_filename}:"
             puts err.message
@@ -180,15 +186,13 @@ module Cukable
       # Otherwise, run Cucumber from scratch on this table,
       # and return the results
       else
-        # FIXME: Move this to a separate method?
-        # Create @features_dir if it doesn't exist
-        in_project_dir do
-          FileUtils.mkdir(@features_dir) unless File.directory?(@features_dir)
-        end
-        feature_filename = File.join(@project_dir, @features_dir, 'fitnesse_test.feature')
+        feature_filename = File.join(@features_dir, 'fitnesse_test.feature')
         # Create the feature file, run cucumber, return results
-        write_feature(table, feature_filename)
-        run_cucumber([feature_filename])
+        in_project_dir do
+          ensure_directory(@features_dir)
+          write_feature(table, feature_filename)
+          run_cucumber([feature_filename])
+        end
         results = File.join(@project_dir, @output_dir, "#{feature_filename}.json")
       end
 
@@ -257,9 +261,7 @@ module Cukable
       got_feature = false
       got_scenario = false
 
-      in_project_dir do
-        FileUtils.mkdir(@features_dir) unless File.directory?(@features_dir)
-      end
+      ensure_directory(@features_dir)
       file = File.open(feature_filename, 'w')
 
       # Error if there is not exactly one "Feature" row
@@ -307,15 +309,19 @@ module Cukable
       args = @cucumber_args
       features = feature_filenames.join(" ")
 
-      in_project_dir do
-        #puts "cucumber #{req} #{format} #{output} #{args} #{features}"
-        system "cucumber #{req} #{format} #{output} #{args} #{features}"
-      end
+      #puts "cucumber #{req} #{format} #{output} #{args} #{features}"
+      system "cucumber #{req} #{format} #{output} #{args} #{features}"
 
       # TODO: Ensure that the correct number of output files were written
       #if !File.exist?(@results_filename)
         #raise "Cucumber failed to write '#{@results_filename}'"
       #end
+    end
+
+
+    # Ensure that a directory `path` exists
+    def ensure_directory(path)
+      FileUtils.mkdir_p(path) unless File.directory?(path)
     end
 
   end

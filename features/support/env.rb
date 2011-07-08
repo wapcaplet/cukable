@@ -132,9 +132,10 @@ class CukableHelper
 
   # Ensure that the given filename contains JSON text.
   #
-  # JSON does not need to match exactly; the output of each line
-  # should *start* with the expected JSON text, but could contain
-  # additional stuff afterwards.
+  # JSON does not need to match exactly; the output of each line should *start*
+  # with the expected JSON text, but could contain additional stuff afterwards.
+  # (This is done so that a <span> with the source filename can appear after
+  # the line, and that kind of thing is too volatile to test for.)
   def file_should_contain_json(filename, json_text)
     got_json = JSON.load(File.open(filename))
     want_json = JSON.parse(json_text)
@@ -172,5 +173,10 @@ end
 
 After do
   #remove_test_dir
+end
+
+Before do
+  remove_test_dir
+  create_test_dir
 end
 
