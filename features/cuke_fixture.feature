@@ -139,7 +139,7 @@ Feature: Cuke fixture
       [
         ["report:Feature: Passing"],
         ["report:Scenario: Passing"],
-        ["error:Given a step passes"]
+        ["pass:Given a step passes"]
       ]
       """
 
@@ -148,7 +148,7 @@ Feature: Cuke fixture
       [
         ["report:Feature: Failing"],
         ["report:Scenario: Failing"],
-        ["error:Given a step fails"]
+        ["fail:Given a step fails"]
       ]
       """
 
