@@ -309,9 +309,10 @@ module Cukable
       output = "--out #{@output_dir}"
       args = @cucumber_args
       features = feature_filenames.join(" ")
-      cucumber_cmd = "cucumber #{req} #{format} #{output} #{args} #{features}"
+      cucumber_cmd = "#{cucumber_executable} #{req} #{format} #{output} #{args} #{features}"
 
       in_project_dir do
+        puts "Running: #{cucumber_cmd}"
         system cucumber_cmd
       end
 
@@ -319,6 +320,27 @@ module Cukable
       #if !File.exist?(@results_filename)
         #raise "Cucumber failed to write '#{@results_filename}'"
       #end
+    end
+
+
+    # Return the name of the cucumber executable. This may be one
+    # of several things depending on whether bundler and/or RVM are in use
+    # for the current `project_dir`.
+    #
+    # If `project_dir` contains a `Gemfile`, use `bundle exec cucumber`. If
+    # `project_dir` contains a `.rvmrc`, source it and execute cucumber within
+    # the resulting context.
+    def cucumber_executable
+      if File.exist?(File.join(@project_dir, 'Gemfile'))
+        cmd = "bundle exec cucumber"
+      else
+        cmd = "cucumber"
+      end
+
+      if File.exist?(File.join(@project_dir, '.rvmrc'))
+        cmd = "source .rvmrc; #{cmd}"
+      end
+      return cmd
     end
 
 
