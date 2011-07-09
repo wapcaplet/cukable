@@ -303,15 +303,21 @@ module Cukable
     def run_cucumber(feature_filenames)
       # Tell cucumber to require the directory where this file lives,
       # so it can find the SlimJSON formatter
-      req = "--require #{File.expand_path(File.dirname(__FILE__))}"
-      req += " --require features"
+      lib = File.expand_path(File.dirname(__FILE__))
+      req = "--require #{lib} --require features"
       format = "--format Cucumber::Formatter::SlimJSON"
       output = "--out #{@output_dir}"
       args = @cucumber_args
       features = feature_filenames.join(" ")
       cucumber_cmd = "#{cucumber_executable} #{req} #{format} #{output} #{args} #{features}"
 
+
       in_project_dir do
+        # If project_dir contains an .rvmrc, wrap the command in a bash
+        # session that will use the correct environment
+        if File.exist?('.rvmrc')
+          cucumber_cmd = "bash -l -c 'source .rvmrc ; #{cucumber_cmd}' "
+        end
         puts "Running: #{cucumber_cmd}"
         system cucumber_cmd
       end
@@ -323,24 +329,14 @@ module Cukable
     end
 
 
-    # Return the name of the cucumber executable. This may be one
-    # of several things depending on whether bundler and/or RVM are in use
-    # for the current `project_dir`.
-    #
-    # If `project_dir` contains a `Gemfile`, use `bundle exec cucumber`. If
-    # `project_dir` contains a `.rvmrc`, source it and execute cucumber within
-    # the resulting context.
+    # Return the name of the cucumber executable. If `project_dir` contains a
+    # `Gemfile`, use `bundle exec cucumber`; otherwise, use `cucumber`.
     def cucumber_executable
       if File.exist?(File.join(@project_dir, 'Gemfile'))
-        cmd = "bundle exec cucumber"
+        return "bundle exec cucumber"
       else
-        cmd = "cucumber"
+        return "cucumber"
       end
-
-      if File.exist?(File.join(@project_dir, '.rvmrc'))
-        cmd = "source .rvmrc; #{cmd}"
-      end
-      return cmd
     end
 
 
