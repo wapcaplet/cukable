@@ -1,4 +1,4 @@
---readme README.md
+--readme docs/index.md
 --markup markdown
 --no-highlight
 lib/**/*.rb
