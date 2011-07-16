@@ -8,7 +8,7 @@ It consists of a [rubyslim](http://github.com/unclebob/rubyslim) fixture that
 invokes Cucumber, and a custom Cucumber output formatter that returns
 SliM-formatted test results to FitNesse.
 
-- {file:docs/install.md Installation & Configuration}
+- [Installation & Configuration](/install.md)
 - {file:docs/converting.md Converting Existing Features}
 - {file:docs/writing_features.md Writing New Features}
 - {file:docs/syntax.md Cukable Syntax}
