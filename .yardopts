@@ -4,4 +4,5 @@
 lib/**/*.rb
 -
 History.md
+docs/*.md
 
