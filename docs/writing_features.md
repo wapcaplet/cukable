@@ -44,4 +44,5 @@ files in `features/step_definitions`. That's outside Cukable's scope.
 Finally, you can run the `FeedKitty` test by itself, or run the entire
 `CukableTests` suite.
 
+Next: [Cukable Syntax](syntax.md)
 

@@ -47,4 +47,5 @@ You can nest suites inside each other, and each suite can have its own
 accelerator will be executed (thus running as many features as possible
 together).
 
+Next: [Cucumber Arguments](cucumber_args.md)
 

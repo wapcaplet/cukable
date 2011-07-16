@@ -113,3 +113,5 @@ the table:
 The inclusion of tags is useful for defining which driver to use (for example
 the `@selenium` tag supported by Capybara), as well as for controlling which
 tests are run via cucumber command-line arguments, described below.
+
+Next: [Acceleration](accelerator.md)

@@ -17,5 +17,5 @@ wiki page you want to import them to is in `FitNesseRoot/MyTests`, do:
 The hierarchy of your `features/` folder will be preserved as a hierarchy of
 FitNesse wiki pages. Each `.feature` file becomes a separate wiki page.
 
-
+Next: [Writing New Features](writing_features.md)
 
