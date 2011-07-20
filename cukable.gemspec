@@ -13,6 +13,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'json'
   s.add_dependency 'cucumber'
   s.add_dependency 'diff-lcs'
+  s.add_dependency 'rubyslim-unofficial'
 
   s.add_development_dependency 'rake', '~> 0.8.7'
   s.add_development_dependency 'rspec', '>= 2.2.0'
