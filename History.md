@@ -1,6 +1,13 @@
 Cukable History
 ===============
 
+0.1.3
+-----
+
+- Documentation cleanup
+- Depend on `rubyslim-unofficial` instead of vendored gem
+
+
 0.1.2
 -----
 

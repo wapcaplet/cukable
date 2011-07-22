@@ -1,1 +1,6 @@
 Gemfile.lock
+pkg/*
+.yardoc/*
+coverage/*
+coverage.data
+
