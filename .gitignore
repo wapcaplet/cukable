@@ -1,6 +1,9 @@
+.rvmrc
 Gemfile.lock
 pkg/*
 .yardoc/*
+doc/*
 coverage/*
 coverage.data
+self_test/*
 
